@@ -33,13 +33,14 @@ jobs:
         run: cargo binstall --no-confirm cargo-component
       - name: Install cargo-make
         run: cargo binstall --no-confirm cargo-make
-      - name: Install protobuf
-        uses: arduino/setup-protoc@v3
       - name: Install golem-cli
         run: |
-          if ! command -v golem-cloud-cli &> /dev/null
-          then cargo install --features universal golem-cloud-cli
-          else echo "golem-cloud-cli is already installed"
+          if ! command -v golem-cli &> /dev/null
+          then
+            curl -L -o golem-cli https://github.com/golemcloud/golem/releases/latest/download/golem-cli-x86_64-unknown-linux-gnu &&
+            chmod +x golem-cli &&
+            sudo mv golem-cli /usr/local/bin/
+          else echo "golem-cli is already installed"
           fi
       - name: Generate stubs
         run: cargo make regenerate-stubs
