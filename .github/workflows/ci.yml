@@ -42,8 +42,8 @@ jobs:
             sudo mv golem-cli /usr/local/bin/
           else echo "golem-cli is already installed"
           fi
-      #      - name: Generate stubs
-      #        run: cargo make regenerate-stubs
+      - name: Generate stubs
+        run: cargo make regenerate-stubs
       #      - name: Compile
       #        run: cargo make release-build-flow
       - name: Compile
