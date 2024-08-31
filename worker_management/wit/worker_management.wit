@@ -1,0 +1,9 @@
+package component: worker-management;
+
+interface api {
+  hello-world: func() -> string;
+}
+
+world worker-management {
+  export api;
+}

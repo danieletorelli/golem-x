@@ -1,0 +1,9 @@
+package component: timeline-management;
+
+interface api {
+  hello-world: func() -> string;
+}
+
+world timeline-management {
+  export api;
+}

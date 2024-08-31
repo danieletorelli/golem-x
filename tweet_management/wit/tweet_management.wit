@@ -1,0 +1,9 @@
+package component: tweet-management;
+
+interface api {
+  hello-world: func() -> string;
+}
+
+world tweet-management {
+  export api;
+}

@@ -1,0 +1,9 @@
+package component: user-management;
+
+interface api {
+  hello-world: func() -> string;
+}
+
+world user-management {
+  export api;
+}

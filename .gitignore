@@ -1,0 +1,50 @@
+# Ignore Rust-specific files and directories
+/Cargo.lock
+/Cargo.toml
+/target/
+*.rs.bk
+
+# Ignore IDE/editor-specific files
+/.idea/
+/.vscode/
+/*.swp
+*.suo
+*.ntvs_analysis.dat
+*.njsproj
+*.sln
+
+# Ignore MacOS Finder metadata
+.DS_Store
+
+# Ignore OS-specific files
+Thumbs.db
+ehthumbs.db
+*.log
+
+# Ignore Rust build artifacts
+**/*.rlib
+**/*.d
+**/*.pdb
+**/*.dSYM
+**/*.dll
+**/*.dylib
+**/*.so
+**/*.a
+
+# Ignore Rust WebAssembly build artifacts
+**/bindings.rs
+**/*.wasm
+**/*.js
+**/*.map
+
+# Ignore node_modules if you're using them for WASM workflows
+/node_modules/
+
+# Ignore npm/Yarn lock files if present
+package-lock.json
+yarn.lock
+
+# Ignore any additional files or directories specific to your build process
+/.cargo/
+/build/
+
