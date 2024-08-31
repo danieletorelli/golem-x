@@ -27,27 +27,22 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
+      - name: Install cargo-binstall
+        uses: cargo-bins/cargo-binstall@main
       - name: Install cargo-component
-        run: |
-          if ! command -v cargo-component &> /dev/null
-          then cargo install cargo-component
-          else echo "cargo-component is already installed"
-          fi
+        run: cargo binstall --no-confirm cargo-component
       - name: Install cargo-make
-        run: |
-          if ! command -v cargo-make &> /dev/null
-          then cargo install cargo-make
-          else echo "cargo-make is already installed"
-          fi
+        run: cargo binstall --no-confirm cargo-make
+      - name: Install protobuf
+        uses: arduino/setup-protoc@v3
       - name: Install golem-cli
         run: |
           if ! command -v golem-cloud-cli &> /dev/null
-          then
-            apt-get update && \
-            apt-get install -y --no-install-recommends protobuf-compiler && \
-            cargo install --features universal golem-cloud-cli
+          then cargo install --features universal golem-cloud-cli
           else echo "golem-cloud-cli is already installed"
           fi
+      - name: Generate stubs
+        run: cargo make regenerate-stubs
       - name: Compile
         run: cargo make release-build-flow
       - name: Check formatting
