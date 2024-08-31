@@ -1,0 +1,82 @@
+[config]
+default_to_workspace = false
+
+[tasks.add-stub-dependency-timeline_management-router]
+args = ["stubgen", "add-stub-dependency", "--stub-wit-root", "timeline_management-stub/wit", "--dest-wit-root", "router/wit", "--overwrite", "--update-cargo-toml"]
+command = "golem-cli"
+cwd = "."
+dependencies = ["generate-timeline_management-stub"]
+
+[tasks.add-stub-dependency-tweet_management-router]
+args = ["stubgen", "add-stub-dependency", "--stub-wit-root", "tweet_management-stub/wit", "--dest-wit-root", "router/wit", "--overwrite", "--update-cargo-toml"]
+command = "golem-cli"
+cwd = "."
+dependencies = ["generate-tweet_management-stub"]
+
+[tasks.add-stub-dependency-user_management-router]
+args = ["stubgen", "add-stub-dependency", "--stub-wit-root", "user_management-stub/wit", "--dest-wit-root", "router/wit", "--overwrite", "--update-cargo-toml"]
+command = "golem-cli"
+cwd = "."
+dependencies = ["generate-user_management-stub"]
+
+[tasks.build]
+args = ["build"]
+command = "cargo-component"
+dependencies = ["clean", "regenerate-stubs"]
+
+[tasks.build-flow]
+dependencies = ["build", "post-build"]
+
+[tasks.build-release]
+args = ["build", "--release"]
+command = "cargo-component"
+dependencies = ["clean", "regenerate-stubs"]
+
+[tasks.clean]
+args = ["clean"]
+command = "cargo-component"
+
+[tasks.compose-release-router]
+args = ["stubgen", "compose", "--source-wasm", "target/wasm32-wasi/release/router.wasm", "--stub-wasm", "target/wasm32-wasi/release/user_management_stub.wasm", "--stub-wasm", "target/wasm32-wasi/release/tweet_management_stub.wasm", "--stub-wasm", "target/wasm32-wasi/release/timeline_management_stub.wasm", "--dest-wasm", "target/wasm32-wasi/release/router_composed.wasm"]
+command = "golem-cli"
+cwd = "."
+
+[tasks.compose-router]
+args = ["stubgen", "compose", "--source-wasm", "target/wasm32-wasi/debug/router.wasm", "--stub-wasm", "target/wasm32-wasi/debug/user_management_stub.wasm", "--stub-wasm", "target/wasm32-wasi/debug/tweet_management_stub.wasm", "--stub-wasm", "target/wasm32-wasi/debug/timeline_management_stub.wasm", "--dest-wasm", "target/wasm32-wasi/debug/router_composed.wasm"]
+command = "golem-cli"
+cwd = "."
+
+[tasks.default]
+alias = "build"
+
+[tasks.generate-timeline_management-stub]
+args = ["stubgen", "generate", "-s", "timeline_management/wit", "-d", "timeline_management-stub"]
+command = "golem-cli"
+cwd = "."
+
+[tasks.generate-tweet_management-stub]
+args = ["stubgen", "generate", "-s", "tweet_management/wit", "-d", "tweet_management-stub"]
+command = "golem-cli"
+cwd = "."
+
+[tasks.generate-user_management-stub]
+args = ["stubgen", "generate", "-s", "user_management/wit", "-d", "user_management-stub"]
+command = "golem-cli"
+cwd = "."
+
+[tasks.post-build]
+dependencies = ["compose-router"]
+
+[tasks.post-build-release]
+dependencies = ["compose-release-router"]
+
+[tasks.regenerate-stubs]
+dependencies = ["add-stub-dependency-user_management-router", "add-stub-dependency-tweet_management-router", "add-stub-dependency-timeline_management-router"]
+
+[tasks.release-build-flow]
+dependencies = ["build-release", "post-build-release"]
+
+[tasks.test]
+args = ["test"]
+command = "cargo-component"
+dependencies = ["clean"]

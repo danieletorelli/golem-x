@@ -39,3 +39,4 @@ features = ["bitflags"]
 
 [lib]
 crate-type = ["cdylib"]
+required-features = []
