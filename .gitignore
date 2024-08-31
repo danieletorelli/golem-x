@@ -35,6 +35,7 @@ ehthumbs.db
 **/*.wasm
 **/*.js
 **/*.map
+**/wit/deps
 
 # Ignore node_modules if you're using them for WASM workflows
 /node_modules/
@@ -46,4 +47,7 @@ yarn.lock
 # Ignore any additional files or directories specific to your build process
 /.cargo/
 /build/
+
+# Golem-specific ignores
+/*-stub/
 

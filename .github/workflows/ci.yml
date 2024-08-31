@@ -28,9 +28,27 @@ jobs:
         with:
           toolchain: stable
       - name: Install cargo-component
-        run: cargo install cargo-component
+        run: |
+          if ! command -v cargo-component &> /dev/null
+          then cargo install cargo-component
+          else echo "cargo-component is already installed"
+          fi
+      - name: Install cargo-make
+        run: |
+          if ! command -v cargo-make &> /dev/null
+          then cargo install cargo-make
+          else echo "cargo-make is already installed"
+          fi
+      - name: Install golem-cli
+        run: |
+          if ! command -v golem-cloud-cli &> /dev/null
+          then
+            apt update && apt install -y --no-install-recommends protobuf-compiler
+            cargo install --features universal golem-cloud-cli
+          else echo "golem-cloud-cli is already installed"
+          fi
       - name: Compile
-        run: cargo component build --release
+        run: cargo make release-build-flow
       - name: Check formatting
         run: cargo fmt -- --check
       - name: Clippy
