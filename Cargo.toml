@@ -1,0 +1,9 @@
+[workspace]
+members = ["user_management", "tweet_management", "timeline_management", "worker_management"]
+resolver = "2"
+
+[profile.release]
+opt-level = "s"
+debug = false
+strip = true
+lto = true

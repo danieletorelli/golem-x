@@ -1,6 +1,5 @@
 # Ignore Rust-specific files and directories
 /Cargo.lock
-/Cargo.toml
 /target/
 *.rs.bk
 
