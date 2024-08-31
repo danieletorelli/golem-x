@@ -33,6 +33,8 @@ jobs:
         run: cargo binstall --no-confirm cargo-component
       - name: Install cargo-make
         run: cargo binstall --no-confirm cargo-make
+      - name: Install protobuf
+        uses: arduino/setup-protoc@v3
       - name: Install golem-cli
         run: |
           if ! command -v golem-cli &> /dev/null
