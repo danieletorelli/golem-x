@@ -1,7 +1,29 @@
 package component: worker-management;
 
 interface api {
-  hello-world: func() -> string;
+  enum change-type {
+    follow,
+    unfollow,
+    new-tweet,
+  }
+
+  // Add a new worker to the consistent hashing ring
+  add-worker: func(worker-id: string) -> result<bool>;
+
+  // Remove a worker from the consistent hashing ring
+  remove-worker: func(worker-id: string) -> result<bool>;
+
+  // Find the worker responsible for a given data key
+  get-responsible-worker: func(key: string) -> result<string>;
+
+  // Forward a data request to the appropriate worker
+  forward-request: func(key: string, data: string) -> result<bool>;
+
+  // Broadcast state changes (e.g., user follow/unfollow, new tweet) to relevant workers
+  broadcast-state-change: func(change-type: change-type, data: string) -> result<bool>;
+
+  // Handle incoming messages from other workers
+  handle-incoming-message: func(message: string) -> result<string>;
 }
 
 world worker-management {
