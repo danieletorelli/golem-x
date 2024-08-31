@@ -22,7 +22,7 @@ impl Guest for Component {
     fn notify_new_tweet(
         tweet_id: String,
         user_id: String,
-        followers: Vec<String>,
+        _followers: Vec<String>,
     ) -> Result<bool, ()> {
         println!(
             "Notifying followers of user with id: {} about new tweet with id: {}",

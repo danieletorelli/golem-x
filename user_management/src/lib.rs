@@ -15,7 +15,7 @@ impl Guest for Component {
     }
 
     // update-profile-picture: func(user-id: string, picture-data: list<u8>) -> result<bool>;
-    fn update_profile_picture(user_id: String, picture_data: Vec<u8>) -> Result<bool, ()> {
+    fn update_profile_picture(user_id: String, _picture_data: Vec<u8>) -> Result<bool, ()> {
         println!("Updating profile picture for user with id: {}", user_id);
         Ok(true)
     }
