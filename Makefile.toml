@@ -13,11 +13,29 @@ command = "golem-cli"
 cwd = "."
 dependencies = ["generate-timeline_management-stub"]
 
+[tasks.add-stub-dependency-timeline_management-worker_management]
+args = ["stubgen", "add-stub-dependency", "--stub-wit-root", "timeline_management-stub/wit", "--dest-wit-root", "worker_management/wit", "--overwrite", "--update-cargo-toml"]
+command = "golem-cli"
+cwd = "."
+dependencies = ["generate-timeline_management-stub"]
+
 [tasks.add-stub-dependency-tweet_management-timeline_management]
 args = ["stubgen", "add-stub-dependency", "--stub-wit-root", "tweet_management-stub/wit", "--dest-wit-root", "timeline_management/wit", "--overwrite", "--update-cargo-toml"]
 command = "golem-cli"
 cwd = "."
 dependencies = ["generate-tweet_management-stub"]
+
+[tasks.add-stub-dependency-tweet_management-worker_management]
+args = ["stubgen", "add-stub-dependency", "--stub-wit-root", "tweet_management-stub/wit", "--dest-wit-root", "worker_management/wit", "--overwrite", "--update-cargo-toml"]
+command = "golem-cli"
+cwd = "."
+dependencies = ["generate-tweet_management-stub"]
+
+[tasks.add-stub-dependency-user_management-worker_management]
+args = ["stubgen", "add-stub-dependency", "--stub-wit-root", "user_management-stub/wit", "--dest-wit-root", "worker_management/wit", "--overwrite", "--update-cargo-toml"]
+command = "golem-cli"
+cwd = "."
+dependencies = ["generate-user_management-stub"]
 
 [tasks.add-stub-dependency-worker_management-timeline_management]
 args = ["stubgen", "add-stub-dependency", "--stub-wit-root", "worker_management-stub/wit", "--dest-wit-root", "timeline_management/wit", "--overwrite", "--update-cargo-toml"]
@@ -69,6 +87,11 @@ args = ["stubgen", "compose", "--source-wasm", "target/wasm32-wasi/release/user_
 command = "golem-cli"
 cwd = "."
 
+[tasks.compose-release-worker_management]
+args = ["stubgen", "compose", "--source-wasm", "target/wasm32-wasi/release/worker_management.wasm", "--stub-wasm", "target/wasm32-wasi/release/user_management_stub.wasm", "--stub-wasm", "target/wasm32-wasi/release/tweet_management_stub.wasm", "--stub-wasm", "target/wasm32-wasi/release/timeline_management_stub.wasm", "--dest-wasm", "target/wasm32-wasi/release/worker_management_composed.wasm"]
+command = "golem-cli"
+cwd = "."
+
 [tasks.compose-timeline_management]
 args = ["stubgen", "compose", "--source-wasm", "target/wasm32-wasi/debug/timeline_management.wasm", "--stub-wasm", "target/wasm32-wasi/debug/tweet_management_stub.wasm", "--stub-wasm", "target/wasm32-wasi/debug/worker_management_stub.wasm", "--dest-wasm", "target/wasm32-wasi/debug/timeline_management_composed.wasm"]
 command = "golem-cli"
@@ -81,6 +104,11 @@ cwd = "."
 
 [tasks.compose-user_management]
 args = ["stubgen", "compose", "--source-wasm", "target/wasm32-wasi/debug/user_management.wasm", "--stub-wasm", "target/wasm32-wasi/debug/timeline_management_stub.wasm", "--stub-wasm", "target/wasm32-wasi/debug/worker_management_stub.wasm", "--dest-wasm", "target/wasm32-wasi/debug/user_management_composed.wasm"]
+command = "golem-cli"
+cwd = "."
+
+[tasks.compose-worker_management]
+args = ["stubgen", "compose", "--source-wasm", "target/wasm32-wasi/debug/worker_management.wasm", "--stub-wasm", "target/wasm32-wasi/debug/user_management_stub.wasm", "--stub-wasm", "target/wasm32-wasi/debug/tweet_management_stub.wasm", "--stub-wasm", "target/wasm32-wasi/debug/timeline_management_stub.wasm", "--dest-wasm", "target/wasm32-wasi/debug/worker_management_composed.wasm"]
 command = "golem-cli"
 cwd = "."
 
@@ -97,19 +125,24 @@ args = ["stubgen", "generate", "-s", "tweet_management/wit", "-d", "tweet_manage
 command = "golem-cli"
 cwd = "."
 
+[tasks.generate-user_management-stub]
+args = ["stubgen", "generate", "-s", "user_management/wit", "-d", "user_management-stub"]
+command = "golem-cli"
+cwd = "."
+
 [tasks.generate-worker_management-stub]
 args = ["stubgen", "generate", "-s", "worker_management/wit", "-d", "worker_management-stub"]
 command = "golem-cli"
 cwd = "."
 
 [tasks.post-build]
-dependencies = ["compose-user_management", "compose-tweet_management", "compose-timeline_management"]
+dependencies = ["compose-user_management", "compose-tweet_management", "compose-timeline_management", "compose-worker_management"]
 
 [tasks.post-build-release]
-dependencies = ["compose-release-user_management", "compose-release-tweet_management", "compose-release-timeline_management"]
+dependencies = ["compose-release-user_management", "compose-release-tweet_management", "compose-release-timeline_management", "compose-release-worker_management"]
 
 [tasks.regenerate-stubs]
-dependencies = ["add-stub-dependency-timeline_management-user_management", "add-stub-dependency-timeline_management-tweet_management", "add-stub-dependency-worker_management-user_management", "add-stub-dependency-worker_management-tweet_management", "add-stub-dependency-tweet_management-timeline_management", "add-stub-dependency-worker_management-timeline_management"]
+dependencies = ["add-stub-dependency-timeline_management-user_management", "add-stub-dependency-timeline_management-tweet_management", "add-stub-dependency-worker_management-user_management", "add-stub-dependency-worker_management-tweet_management", "add-stub-dependency-tweet_management-timeline_management", "add-stub-dependency-worker_management-timeline_management", "add-stub-dependency-user_management-worker_management", "add-stub-dependency-tweet_management-worker_management", "add-stub-dependency-timeline_management-worker_management"]
 
 [tasks.release-build-flow]
 dependencies = ["build-release", "post-build-release"]
