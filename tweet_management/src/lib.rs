@@ -17,19 +17,6 @@ impl Guest for Component {
         println!("Getting tweets for user with id: {}", user_id);
         Ok(vec![])
     }
-
-    //  notify-new-tweet: func(tweet-id: string, user-id: string, followers: list<string>) -> result<bool>;
-    fn notify_new_tweet(
-        tweet_id: String,
-        user_id: String,
-        _followers: Vec<String>,
-    ) -> Result<bool, ()> {
-        println!(
-            "Notifying followers of user with id: {} about new tweet with id: {}",
-            user_id, tweet_id
-        );
-        Ok(true)
-    }
 }
 
 bindings::export!(Component with_types_in bindings);

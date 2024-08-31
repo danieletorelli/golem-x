@@ -2,25 +2,25 @@ package component: user-management;
 
 interface api {
   // Creates a new user profile
-  create-user: func(username: string) -> result<string>;
+  create-user: func(username: string) -> result<string>; // user-id
 
   // Updates the user's profile picture using binary data
-  update-profile-picture: func(user-id: string, picture-data: list<u8>) -> result<bool>;
+  update-profile-picture: func(user-id: string, picture-data: list<u8>) -> result<bool>; // success
 
   // Retrieves the binary data of a user's profile picture
-  get-profile-picture: func(user-id: string) -> result<list<u8>>;
+  get-profile-picture: func(user-id: string) -> result<list<u8>>; // picture-data
 
   // Follow another user
-  follow-user: func(user-id: string, target-user-id: string) -> result<bool>;
+  follow-user: func(user-id: string, target-user-id: string) -> result<bool>; // success
 
   // Unfollow another user
-  unfollow-user: func(user-id: string, target-user-id: string) -> result<bool>;
+  unfollow-user: func(user-id: string, target-user-id: string) -> result<bool>; // success
 
   // Retrieves the list of followers for a user
-  get-followers: func(user-id: string) -> result<list<string>>;
+  get-followers: func(user-id: string) -> result<list<string>>; // list of user-ids
 
   // Retrieves the list of users that a user is following
-  get-following: func(user-id: string) -> result<list<string>>;
+  get-following: func(user-id: string) -> result<list<string>>; // list of user-ids
 }
 
 world user-management {

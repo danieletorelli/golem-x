@@ -2,13 +2,10 @@ package component: tweet-management;
 
 interface api {
   // Post a new tweet
-  post-tweet: func(user-id: string, content: string) -> result<string>;
+  post-tweet: func(user-id: string, content: string) -> result<string>; // tweet-id
 
   // Get tweets for a specific user
-  get-user-tweets: func(user-id: string) -> result<list<string>>;
-
-  // Notify timeline management when a new tweet is posted
-  notify-new-tweet: func(tweet-id: string, user-id: string, followers: list<string>) -> result<bool>;
+  get-user-tweets: func(user-id: string) -> result<list<string>>; // list of tweet-ids
 }
 
 world tweet-management {

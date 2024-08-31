@@ -1,19 +1,11 @@
 package component: timeline-management;
 
 interface api {
-  enum action {
-    follow,
-    unfollow,
-  }
-
   // Update the timeline for a user when a new tweet is posted
-  update-timeline: func(user-id: string, tweet-id: string, author-id: string) -> result<bool>;
+  update-timeline: func(user-id: string, tweet-ids: list<string>) -> result<bool>; // success
 
   // Get the timeline for a specific user
-  get-timeline: func(user-id: string) -> result<list<string>>;
-
-  // Refresh timeline after a follow/unfollow action ("follow" or "unfollow")
-  refresh-timeline: func(user-id: string, followed-user-id: string, action: action) -> result<bool>;
+  get-timeline: func(user-id: string) -> result<list<string>>; // list of tweet-ids
 }
 
 world timeline-management {

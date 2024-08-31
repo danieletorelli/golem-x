@@ -1,0 +1,42 @@
+package component: router;
+
+interface api {
+  enum action {
+    follow,
+    unfollow
+  }
+
+  enum query-type {
+    user-profile,
+    user-followers,
+    user-following,
+    user-tweets,
+    tweet-data,
+    user-timeline,
+    //     add-worker,
+    //     remove-worker,
+    //     distribute-load,
+  }
+
+  // Notify about new tweets, handling the distribution to timeline management components
+  notify-new-tweet: func(tweet-id: string, user-id: string, followers: list<string>) -> result<bool>; // success
+
+  // Inform about user follow/unfollow actions, managing updates to timelines
+  inform-follow-change: func(user-id: string, target-user-id: string, action: action) -> result<bool>; // success
+
+  // Add a new worker to the consistent hashing ring
+  add-worker: func(worker-id: string) -> result<bool>; // success
+
+  // Remove a worker from the consistent hashing ring
+  remove-worker: func(worker-id: string) -> result<bool>; // success
+
+  // Find the worker responsible for a given data key
+  get-responsible-worker: func(key: string) -> result<string>; // worker-id
+
+  // Route queries to appropriate workers based on consistent hashing or other criteria
+  route-query: func(query-type: query-type, key: string, data: string) -> result<string>; // response
+}
+
+world router {
+  export api;
+}
