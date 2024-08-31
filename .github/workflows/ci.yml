@@ -43,7 +43,8 @@ jobs:
         run: |
           if ! command -v golem-cloud-cli &> /dev/null
           then
-            apt update && apt install -y --no-install-recommends protobuf-compiler
+            apt-get update && \
+            apt-get install -y --no-install-recommends protobuf-compiler && \
             cargo install --features universal golem-cloud-cli
           else echo "golem-cloud-cli is already installed"
           fi
