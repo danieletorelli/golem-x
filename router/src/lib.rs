@@ -84,7 +84,7 @@ fn get_responsible_worker(key: String) -> String {
     })
 }
 
-fn post_tweet(user_id: String, content: String) -> Result<String, ()> {
+fn _post_tweet(user_id: String, content: String) -> Result<String, ()> {
     println!(
         "Posting tweet for user with id: {} with content: {}",
         user_id.clone(),
@@ -114,7 +114,7 @@ fn get_tweets(user_id: String) -> Result<Vec<String>, ()> {
     api.blocking_get_user_tweets(user_id.as_str())
 }
 
-fn update_timeline(user_id: String, tweet_id: String) -> Result<bool, ()> {
+fn _update_timeline(user_id: String, tweet_id: String) -> Result<bool, ()> {
     println!(
         "Updating timeline for user with id: {} with tweet with id: {}",
         user_id.clone(),
