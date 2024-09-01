@@ -1,9 +1,10 @@
 package component: router;
 
 interface router-api {
-  enum action {
-    follow,
-    unfollow
+  variant action {
+    follow(string),
+    unfollow(string),
+    post-tweet(string),
   }
 
   enum query-type {
@@ -13,9 +14,6 @@ interface router-api {
     user-tweets,
     tweet-data,
     user-timeline,
-    //     add-worker,
-    //     remove-worker,
-    //     distribute-load,
   }
 
   record user-profile {
@@ -50,7 +48,7 @@ interface router-api {
   }
 
   // Route actions to appropriate workers based on consistent hashing or other criteria
-  route-action: func(action: action, user-id: string, target-user-id: string) -> router-action-response; // response
+  route-action: func(action: action, user-id: string) -> router-action-response; // response
 
   // Route queries to appropriate workers based on consistent hashing or other criteria
   route-query: func(query-type: query-type, user-id: string) -> router-query-response; // response

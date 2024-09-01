@@ -1,6 +1,8 @@
 #[allow(warnings)]
 mod bindings;
 
+use crate::bindings::component::timeline_management_stub::stub_timeline_management::TimelineAction;
+use crate::bindings::component::tweet_management_stub::stub_tweet_management::PostedTweet;
 use bindings::exports::component::router::router_api::*;
 use blake2::Digest;
 use std::cell::RefCell;
@@ -110,7 +112,6 @@ fn add_worker(worker_id: String) -> Option<Worker> {
             Some(_) => None,
         }
     })
-    // TODO: Rebalance workers data
 }
 
 #[allow(unused)]
@@ -127,7 +128,6 @@ fn remove_worker(worker_id: String) -> bool {
             None => false,
         }
     })
-    // TODO: Rebalance workers data
 }
 
 fn get_responsible_worker(key: String) -> Option<Worker> {
@@ -142,24 +142,7 @@ fn get_responsible_worker(key: String) -> Option<Worker> {
     })
 }
 
-fn post_tweet(user_id: String, content: String) -> Result<String, ()> {
-    println!(
-        "Posting tweet for user with id: {} with content: {}",
-        user_id.clone(),
-        content
-    );
-
-    use bindings::component::tweet_management_stub::stub_tweet_management::*;
-    use bindings::golem::rpc::types::Uri;
-
-    let api = TweetApi::new(&Uri {
-        value: get_tweet_worker_urn(user_id.clone()),
-    });
-
-    api.blocking_post_tweet(user_id.as_str(), content.as_str())
-}
-
-fn get_tweets(user_id: String) -> Result<Vec<String>, ()> {
+fn get_tweets(user_id: String) -> Result<Vec<PostedTweet>, ()> {
     println!("Getting tweets for user with id: {}", user_id.clone());
 
     use bindings::component::tweet_management_stub::stub_tweet_management::*;
@@ -172,11 +155,17 @@ fn get_tweets(user_id: String) -> Result<Vec<String>, ()> {
     api.blocking_get_user_tweets(user_id.as_str())
 }
 
-fn _update_timeline(user_id: String, tweet_id: String) -> Result<bool, ()> {
+fn update_timeline(
+    user_id: String,
+    tweet_id: String,
+    timestamp: i64,
+    action: TimelineAction,
+) -> Result<bool, ()> {
     println!(
-        "Updating timeline for user with id: {} with tweet with id: {}",
+        "Updating timeline for user with id: {} with tweet with id: {} and timestamp: {}",
         user_id.clone(),
-        tweet_id.clone()
+        tweet_id.clone(),
+        timestamp
     );
 
     use bindings::component::timeline_management_stub::stub_timeline_management::*;
@@ -186,7 +175,7 @@ fn _update_timeline(user_id: String, tweet_id: String) -> Result<bool, ()> {
         value: get_timeline_worker_urn(user_id.clone()),
     });
 
-    api.blocking_update_timeline(user_id.as_str(), tweet_id.as_str())
+    api.blocking_update_timeline(user_id.as_str(), tweet_id.as_str(), timestamp, action)
 }
 
 fn get_timeline(user_id: String) -> Result<Vec<String>, ()> {
@@ -273,7 +262,10 @@ fn compose_user_profile(urn: String, user_id: String) -> Result<UserProfile, Str
 fn compose_tweets(urn: String, user_id: String) -> Result<TweetData, ()> {
     println!("Calling {} to compose tweets for user {}", urn, user_id);
 
-    get_tweets(user_id.clone()).map(|tweets| TweetData { user_id, tweets })
+    get_tweets(user_id.clone()).map(|tweets| TweetData {
+        user_id,
+        tweets: tweets.into_iter().map(|tweet| tweet.tweet_id).collect(),
+    })
 }
 
 fn compose_timeline(urn: String, user_id: String) -> Result<Vec<TimelineData>, ()> {
@@ -312,7 +304,24 @@ fn orchestrate_follow(user_id: String, target_user_id: String) -> Result<bool, (
         target_user_api.blocking_follow_user(target_user_id.as_str(), user_id.as_str());
 
     match (follow_result, follow_back_result) {
-        (Ok(_), Ok(_)) => Ok(true),
+        (Ok(_), Ok(_)) => {
+            // Include tweets of the target user in the user's timeline
+            get_tweets(target_user_id.clone())
+                .and_then(|tweets| {
+                    tweets
+                        .into_iter()
+                        .map(|tweet| {
+                            update_timeline(
+                                user_id.clone(),
+                                tweet.tweet_id,
+                                tweet.timestamp,
+                                TimelineAction::Insert,
+                            )
+                        })
+                        .collect::<Result<Vec<_>, _>>()
+                })
+                .map(|_| true)
+        }
         // TODO: Log inconsistent state, if happens
         (Err(_), Ok(_)) => {
             let _ =
@@ -350,7 +359,24 @@ fn orchestrate_unfollow(user_id: String, target_user_id: String) -> Result<bool,
         target_user_api.blocking_unfollow_user(target_user_id.as_str(), user_id.as_str());
 
     match (unfollow_result, unfollow_back_result) {
-        (Ok(_), Ok(_)) => Ok(true),
+        (Ok(_), Ok(_)) => {
+            // Remove tweets of the target user from the user's timeline
+            get_tweets(target_user_id.clone())
+                .and_then(|tweets| {
+                    tweets
+                        .into_iter()
+                        .map(|tweet| {
+                            update_timeline(
+                                user_id.clone(),
+                                tweet.tweet_id,
+                                tweet.timestamp,
+                                TimelineAction::Remove,
+                            )
+                        })
+                        .collect::<Result<Vec<_>, _>>()
+                })
+                .map(|_| true)
+        }
         // TODO: Log inconsistent state, if happens
         (Err(_), Ok(_)) => {
             let _ = target_user_api.blocking_follow_user(target_user_id.as_str(), user_id.as_str());
@@ -364,25 +390,57 @@ fn orchestrate_unfollow(user_id: String, target_user_id: String) -> Result<bool,
     }
 }
 
+fn orchestrate_post_tweet(user_id: String, content: String) -> Result<String, ()> {
+    println!(
+        "Posting tweet for user with id: {} with content: {}",
+        user_id.clone(),
+        content
+    );
+
+    use bindings::component::tweet_management_stub::stub_tweet_management::*;
+    use bindings::golem::rpc::types::Uri;
+
+    let tweet_api = TweetApi::new(&Uri {
+        value: get_tweet_worker_urn(user_id.clone()),
+    });
+
+    tweet_api
+        .blocking_post_tweet(user_id.as_str(), content.as_str())
+        .and_then(|tweet| {
+            get_followers(get_user_worker_urn(user_id.clone()), user_id.clone()).and_then(
+                |followers| {
+                    followers
+                        .into_iter()
+                        .map(|follower_id| {
+                            update_timeline(
+                                follower_id,
+                                tweet.tweet_id.clone(),
+                                tweet.timestamp,
+                                TimelineAction::Insert,
+                            )
+                        })
+                        .collect::<Result<Vec<_>, _>>()
+                        .map(|_| tweet.tweet_id)
+                },
+            )
+        })
+}
+
 impl Guest for Component {
-    // route-action: func(action: action, user-id: string, target-user-id: string) -> router-action-response;
-    fn route_action(
-        action: Action,
-        user_id: String,
-        target_user_id: String,
-    ) -> RouterActionResponse {
+    // route-action: func(action: action, user-id: string) -> router-action-response;
+    fn route_action(action: Action, user_id: String) -> RouterActionResponse {
         use bindings::exports::component::router::router_api::RouterActionResponse::*;
-        println!(
-            "Routing action of type: {:?} for user: {} and target user: {}",
-            action, user_id, target_user_id
-        );
+        println!("Routing action of type: {:?} for user: {}", action, user_id);
         match action {
-            Action::Follow => orchestrate_follow(user_id, target_user_id)
+            Action::Follow(target_user_id) => orchestrate_follow(user_id, target_user_id)
                 .map(|_| Success)
                 .unwrap_or_else(|_| Failure("Failed to follow".to_string())),
-            Action::Unfollow => orchestrate_unfollow(user_id, target_user_id)
+            Action::Unfollow(target_user_id) => orchestrate_unfollow(user_id, target_user_id)
                 .map(|_| Success)
                 .unwrap_or_else(|_| Failure("Failed to unfollow".to_string())),
+            Action::PostTweet(content) => orchestrate_post_tweet(user_id, content)
+                .map(|_| Success)
+                .unwrap_or_else(|_| Failure("Failed to post tweet".to_string())),
         }
     }
 
