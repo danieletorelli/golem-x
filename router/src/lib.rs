@@ -27,60 +27,58 @@ fn hash(input: &str) -> u64 {
 }
 
 fn get_user_worker_urn(user_id: String) -> String {
-    let worker_id = get_responsible_worker(user_id.clone());
-    let component_id = std::env::var("USER_MANAGEMENT_COMPONENT_ID")
-        .expect("USER_MANAGEMENT_COMPONENT_ID not set");
+    let worker_id = match get_responsible_worker(user_id.clone()) {
+        Some(worker) => worker.id,
+        None => {
+            add_worker(user_id.clone());
+            user_id
+        }
+    };
+    let component_id =
+        std::env::var("USER_MANAGER_COMPONENT_ID").expect("USER_MANAGER_COMPONENT_ID not set");
     format!("urn:worker:{component_id}/user-manager-{worker_id}")
 }
 fn get_tweet_worker_urn() -> String {
-    let component_id = std::env::var("TWEET_MANAGEMENT_COMPONENT_ID")
-        .expect("TWEET_MANAGEMENT_COMPONENT_ID not set");
+    let component_id =
+        std::env::var("TWEET_MANAGER_COMPONENT_ID").expect("TWEET_MANAGER_COMPONENT_ID not set");
     format!("urn:worker:{component_id}/tweet-manager")
 }
 fn get_timeline_worker_urn() -> String {
-    let component_id =
-        std::env::var("TIMELINE_COMPONENT_ID").expect("TIMELINE_COMPONENT_ID not set");
+    let component_id = std::env::var("TIMELINE_MANAGER_COMPONENT_ID")
+        .expect("TIMELINE_MANAGER_COMPONENT_ID not set");
     format!("urn:worker:{component_id}/timeline-manager")
 }
 
 fn add_worker(worker_id: String) -> bool {
     println!("Adding worker with id: {}", worker_id);
-    WORKERS
-        .with_borrow_mut(|workers| {
-            workers.insert(hash(worker_id.as_str()), Worker { id: worker_id })
-        })
-        .is_some()
+    WORKERS.with(|workers| {
+        let worker_hash = hash(worker_id.as_str());
+        let mut w = workers.borrow_mut();
+        let worker = Worker { id: worker_id };
+        let added = w.insert(worker_hash, worker);
+        added.is_none()
+    })
     // TODO: Rebalance workers data
 }
 
 #[allow(unused)]
 fn remove_worker(worker_id: String) -> bool {
     println!("Removing worker with id: {}", worker_id);
-    WORKERS
-        .with_borrow_mut(|workers| workers.remove(&hash(worker_id.as_str())))
-        .is_some()
+    WORKERS.with(|workers| {
+        let worker_hash = hash(worker_id.as_str());
+        let mut w = workers.borrow_mut();
+        let removed = w.remove(&worker_hash);
+        removed.is_some()
+    })
     // TODO: Rebalance workers data
 }
 
-fn get_responsible_worker(key: String) -> String {
+fn get_responsible_worker(key: String) -> Option<Worker> {
     println!("Getting responsible worker for key: {}", key);
-    WORKERS.with_borrow(|workers| {
+    WORKERS.with(|workers| {
         let worker_hash = hash(key.as_str());
-        match workers.get(&worker_hash) {
-            Some(worker) => {
-                println!("Responsible worker for key '{}' found: {}", key, worker.id);
-                worker.id.clone()
-            }
-            None => {
-                let worker_id = worker_hash.to_string();
-                println!(
-                    "Responsible worker for key '{}' not found. Will be created with id {}.",
-                    key, worker_id
-                );
-                add_worker(worker_id.clone());
-                worker_id
-            }
-        }
+        let s = workers.borrow();
+        s.get(&worker_hash).cloned()
     })
 }
 
@@ -161,7 +159,7 @@ fn get_username(urn: String, user_id: String) -> Result<String, ()> {
 
 fn get_followers(urn: String, user_id: String) -> Result<Vec<String>, ()> {
     println!(
-        "Calling {} to get username for user with id: {}",
+        "Calling {} to get followers for user with id: {}",
         urn.clone(),
         user_id.clone()
     );
@@ -176,7 +174,7 @@ fn get_followers(urn: String, user_id: String) -> Result<Vec<String>, ()> {
 
 fn get_following(urn: String, user_id: String) -> Result<Vec<String>, ()> {
     println!(
-        "Calling {} to get username for user with id: {}",
+        "Calling {} to get following for user with id: {}",
         urn.clone(),
         user_id.clone()
     );
@@ -314,3 +312,37 @@ impl Guest for Component {
 }
 
 bindings::export!(Component with_types_in bindings);
+
+// add a test for add_worker
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_user_worker_urn() {
+        let user_id = "test_user_id".to_string();
+        let component_id = "test_component_id".to_string();
+        std::env::set_var("USER_MANAGER_COMPONENT_ID", component_id.clone());
+        assert_eq!(
+            get_user_worker_urn(user_id.clone()),
+            format!("urn:worker:{}/user-manager-{}", component_id, user_id)
+        );
+    }
+
+    #[test]
+    fn test_get_responsible_worker() {
+        let worker_id = "test_worker_id".to_string();
+        add_worker(worker_id.clone());
+        assert_eq!(
+            get_responsible_worker(worker_id.clone()).unwrap().id,
+            worker_id
+        );
+    }
+
+    #[test]
+    fn test_add_worker() {
+        let worker_id = "test_worker_id".to_string();
+        assert_eq!(add_worker(worker_id.clone()), true);
+        assert_eq!(add_worker(worker_id.clone()), false);
+    }
+}
