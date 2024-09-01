@@ -50,6 +50,8 @@ jobs:
         run: |
           sed -i 's/wasm32-wasi/wasm32-wasip1/g' Makefile.toml && \
           cargo make release-build-flow
+      - name: Test
+        run: cargo test --all
       - name: Clippy
         run: cargo clippy -- -Dwarnings
       - name: Save components
