@@ -27,6 +27,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
+          targets: wasm32-wasi
       - name: Install cargo-binstall
         uses: cargo-bins/cargo-binstall@main
       - name: Install cargo-component
