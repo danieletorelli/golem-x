@@ -1,6 +1,6 @@
 package component: router;
 
-interface api {
+interface router-api {
   enum action {
     follow,
     unfollow
@@ -18,25 +18,46 @@ interface api {
     //     distribute-load,
   }
 
+  record user-profile {
+    user-id: string,
+    username: string,
+    followers: list<string>,
+    following: list<string>,
+  }
+
+  record tweet-data {
+    user-id: string,
+    tweets: list<string>,
+  }
+
+  record timeline-data {
+    tweet-id: string,
+    user-id: string,
+  }
+
+  variant router-response {
+    user-profile-response(user-profile),
+    user-followers-response(list<string>),
+    user-following-response(list<string>),
+    user-tweets-response(tweet-data),
+    user-timeline-response(list<timeline-data>),
+    failure(string),
+  }
+
   // Notify about new tweets, handling the distribution to timeline management components
   notify-new-tweet: func(tweet-id: string, user-id: string, followers: list<string>) -> result<bool>; // success
 
   // Inform about user follow/unfollow actions, managing updates to timelines
   inform-follow-change: func(user-id: string, target-user-id: string, action: action) -> result<bool>; // success
 
-  // Add a new worker to the consistent hashing ring
-  add-worker: func(worker-id: string) -> result<bool>; // success
-
-  // Remove a worker from the consistent hashing ring
-  remove-worker: func(worker-id: string) -> result<bool>; // success
-
-  // Find the worker responsible for a given data key
-  get-responsible-worker: func(key: string) -> result<string>; // worker-id
-
   // Route queries to appropriate workers based on consistent hashing or other criteria
-  route-query: func(query-type: query-type, key: string, data: string) -> result<string>; // response
+  route-query: func(query-type: query-type, key: string, data: string) -> router-response; // response
 }
 
 world router {
-  export api;
+  import component: user-management-stub/stub-user-management;
+  import component: tweet-management-stub/stub-tweet-management;
+  import component: timeline-management-stub/stub-timeline-management;
+
+  export router-api;
 }
