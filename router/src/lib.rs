@@ -92,6 +92,8 @@ fn post_tweet(user_id: String, content: String) -> Result<String, ()> {
     );
 
     use bindings::component::tweet_management_stub::stub_tweet_management::*;
+    use bindings::golem::rpc::types::Uri;
+
     let api = TweetApi::new(&Uri {
         value: get_tweet_worker_urn(),
     });
@@ -103,6 +105,8 @@ fn get_tweets(user_id: String) -> Result<Vec<String>, ()> {
     println!("Getting tweets for user with id: {}", user_id.clone());
 
     use bindings::component::tweet_management_stub::stub_tweet_management::*;
+    use bindings::golem::rpc::types::Uri;
+
     let api = TweetApi::new(&Uri {
         value: get_tweet_worker_urn(),
     });
@@ -118,6 +122,8 @@ fn update_timeline(user_id: String, tweet_id: String) -> Result<bool, ()> {
     );
 
     use bindings::component::timeline_management_stub::stub_timeline_management::*;
+    use bindings::golem::rpc::types::Uri;
+
     let api = TimelineApi::new(&Uri {
         value: get_timeline_worker_urn(),
     });
@@ -129,6 +135,8 @@ fn get_timeline(user_id: String) -> Result<Vec<String>, ()> {
     println!("Getting timeline for user with id: {}", user_id.clone());
 
     use bindings::component::timeline_management_stub::stub_timeline_management::*;
+    use bindings::golem::rpc::types::Uri;
+
     let api = TimelineApi::new(&Uri {
         value: get_timeline_worker_urn(),
     });
@@ -144,6 +152,8 @@ fn get_username(urn: String, user_id: String) -> Result<String, ()> {
     );
 
     use bindings::component::user_management_stub::stub_user_management::*;
+    use bindings::golem::rpc::types::Uri;
+
     let api = UserApi::new(&Uri { value: urn });
 
     api.blocking_get_username(user_id.as_str())
@@ -157,6 +167,8 @@ fn get_followers(urn: String, user_id: String) -> Result<Vec<String>, ()> {
     );
 
     use bindings::component::user_management_stub::stub_user_management::*;
+    use bindings::golem::rpc::types::Uri;
+
     let api = UserApi::new(&Uri { value: urn });
 
     api.blocking_get_followers(user_id.as_str())
@@ -170,6 +182,8 @@ fn get_following(urn: String, user_id: String) -> Result<Vec<String>, ()> {
     );
 
     use bindings::component::user_management_stub::stub_user_management::*;
+    use bindings::golem::rpc::types::Uri;
+
     let api = UserApi::new(&Uri { value: urn });
 
     api.blocking_get_following(user_id.as_str())
