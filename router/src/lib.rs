@@ -394,7 +394,7 @@ fn orchestrate_follow(user_id: String, target_user_id: String) -> Result<bool, (
 
     let follow_result = user_api.blocking_follow_user(user_id.as_str(), target_user_id.as_str());
     let follow_back_result =
-        target_user_api.blocking_follow_user(target_user_id.as_str(), user_id.as_str());
+        target_user_api.blocking_followed_by_user(target_user_id.as_str(), user_id.as_str());
 
     match (follow_result, follow_back_result) {
         (Ok(_), Ok(_)) => {
@@ -420,8 +420,8 @@ fn orchestrate_follow(user_id: String, target_user_id: String) -> Result<bool, (
         }
         // TODO: Log inconsistent state, if happens
         (Err(_), Ok(_)) => {
-            let _ =
-                target_user_api.blocking_unfollow_user(target_user_id.as_str(), user_id.as_str());
+            let _ = target_user_api
+                .blocking_unfollowed_by_user(target_user_id.as_str(), user_id.as_str());
             Err(())
         }
         (Ok(_), Err(_)) => {
@@ -452,7 +452,7 @@ fn orchestrate_unfollow(user_id: String, target_user_id: String) -> Result<bool,
     let unfollow_result =
         user_api.blocking_unfollow_user(user_id.as_str(), target_user_id.as_str());
     let unfollow_back_result =
-        target_user_api.blocking_unfollow_user(target_user_id.as_str(), user_id.as_str());
+        target_user_api.blocking_unfollowed_by_user(target_user_id.as_str(), user_id.as_str());
 
     match (unfollow_result, unfollow_back_result) {
         (Ok(_), Ok(_)) => {
@@ -476,7 +476,8 @@ fn orchestrate_unfollow(user_id: String, target_user_id: String) -> Result<bool,
         }
         // TODO: Log inconsistent state, if happens
         (Err(_), Ok(_)) => {
-            let _ = target_user_api.blocking_follow_user(target_user_id.as_str(), user_id.as_str());
+            let _ = target_user_api
+                .blocking_followed_by_user(target_user_id.as_str(), user_id.as_str());
             Err(())
         }
         (Ok(_), Err(_)) => {
