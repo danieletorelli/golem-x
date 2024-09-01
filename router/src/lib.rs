@@ -12,13 +12,13 @@ use std::collections::BTreeMap;
 struct WorkerId(String);
 
 impl WorkerId {
-    fn from(u: u64) -> Self {
+    fn from(u: u8) -> Self {
         WorkerId(u.to_string())
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Copy, Eq, PartialOrd, Ord)]
-struct WorkerHash(u64);
+struct WorkerHash(u8);
 
 #[derive(Debug, Clone, PartialEq)]
 struct Worker {
@@ -28,7 +28,7 @@ struct Worker {
 
 struct State {
     next_user_id: u64,
-    workers_count: u64,
+    workers_count: u8,
     workers: BTreeMap<WorkerHash, Worker>,
 }
 
@@ -49,12 +49,12 @@ thread_local! {
 struct Component;
 
 fn hash(input: &str) -> WorkerHash {
-    let mut hasher = blake2::Blake2b512::new();
+    let mut hasher = blake2::Blake2s256::new();
     hasher.update(input.as_bytes());
     let result = hasher.finalize();
-    // Convert the first 8 bytes of the hash into u64
-    let bytes: [u8; 8] = result[..8].try_into().expect("slice with incorrect length");
-    WorkerHash(u64::from_le_bytes(bytes))
+    // Convert the first byte of the hash into u64
+    let bytes: [u8; 1] = result[..1].try_into().expect("slice with incorrect length");
+    WorkerHash(u8::from_le_bytes(bytes))
 }
 
 fn get_user_worker_urn(user_id: String) -> String {
