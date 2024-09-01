@@ -6,11 +6,17 @@ interface timeline-api {
     remove,
   }
 
+  record timeline-tweet {
+    tweet-id: string,
+    author-id: string,
+    timestamp: s64,
+  }
+
   // Update the timeline for a user when a new tweet is posted
-  update-timeline: func(user-id: string, tweet-id: string, timestamp: s64, action: timeline-action) -> result<bool>; // success
+  update-timeline: func(user-id: string, tweet-id: string, author-id: string, timestamp: s64, action: timeline-action) -> result<bool>; // success
 
   // Get the timeline for a specific user
-  get-timeline: func(user-id: string) -> result<list<string>>; // list of tweet-ids
+  get-timeline: func(user-id: string) -> result<list<timeline-tweet>>; // list of tweet-ids
 }
 
 world timeline-management {

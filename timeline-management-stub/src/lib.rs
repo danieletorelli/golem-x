@@ -69,7 +69,16 @@ for FutureGetTimelineResult {
         };
         pollable
     }
-    fn get(&self) -> Option<Result<Vec<String>, ()>> {
+    fn get(
+        &self,
+    ) -> Option<
+        Result<
+            Vec<
+                crate::bindings::component::timeline_management::timeline_api::TimelineTweet,
+            >,
+            (),
+        >,
+    > {
         self.future_invoke_result
             .get()
             .map(|result| {
@@ -92,7 +101,26 @@ for FutureGetTimelineResult {
                                 ok_value
                                     .expect("result ok value not found")
                                     .list_elements(|item| {
-                                        item.string().expect("string not found").to_string()
+                                        let record = item;
+                                        crate::bindings::component::timeline_management::timeline_api::TimelineTweet {
+                                            tweet_id: record
+                                                .field(0usize)
+                                                .expect("record field not found")
+                                                .string()
+                                                .expect("string not found")
+                                                .to_string(),
+                                            author_id: record
+                                                .field(1usize)
+                                                .expect("record field not found")
+                                                .string()
+                                                .expect("string not found")
+                                                .to_string(),
+                                            timestamp: record
+                                                .field(2usize)
+                                                .expect("record field not found")
+                                                .s64()
+                                                .expect("i64 not found"),
+                                        }
                                     })
                                     .expect("list not found"),
                             )
@@ -117,6 +145,7 @@ for TimelineApi {
         &self,
         user_id: String,
         tweet_id: String,
+        author_id: String,
         timestamp: i64,
         action: crate::bindings::component::timeline_management::timeline_api::TimelineAction,
     ) -> Result<bool, ()> {
@@ -127,6 +156,7 @@ for TimelineApi {
                 &[
                     WitValue::builder().string(&user_id),
                     WitValue::builder().string(&tweet_id),
+                    WitValue::builder().string(&author_id),
                     WitValue::builder().s64(timestamp),
                     WitValue::builder()
                         .enum_value(
@@ -170,6 +200,7 @@ for TimelineApi {
         &self,
         user_id: String,
         tweet_id: String,
+        author_id: String,
         timestamp: i64,
         action: crate::bindings::component::timeline_management::timeline_api::TimelineAction,
     ) -> crate::bindings::exports::component::timeline_management_stub::stub_timeline_management::FutureUpdateTimelineResult {
@@ -180,6 +211,7 @@ for TimelineApi {
                 &[
                     WitValue::builder().string(&user_id),
                     WitValue::builder().string(&tweet_id),
+                    WitValue::builder().string(&author_id),
                     WitValue::builder().s64(timestamp),
                     WitValue::builder()
                         .enum_value(
@@ -198,7 +230,15 @@ for TimelineApi {
             future_invoke_result: result,
         })
     }
-    fn blocking_get_timeline(&self, user_id: String) -> Result<Vec<String>, ()> {
+    fn blocking_get_timeline(
+        &self,
+        user_id: String,
+    ) -> Result<
+        Vec<
+            crate::bindings::component::timeline_management::timeline_api::TimelineTweet,
+        >,
+        (),
+    > {
         let result = self
             .rpc
             .invoke_and_await(
@@ -223,7 +263,26 @@ for TimelineApi {
                         ok_value
                             .expect("result ok value not found")
                             .list_elements(|item| {
-                                item.string().expect("string not found").to_string()
+                                let record = item;
+                                crate::bindings::component::timeline_management::timeline_api::TimelineTweet {
+                                    tweet_id: record
+                                        .field(0usize)
+                                        .expect("record field not found")
+                                        .string()
+                                        .expect("string not found")
+                                        .to_string(),
+                                    author_id: record
+                                        .field(1usize)
+                                        .expect("record field not found")
+                                        .string()
+                                        .expect("string not found")
+                                        .to_string(),
+                                    timestamp: record
+                                        .field(2usize)
+                                        .expect("record field not found")
+                                        .s64()
+                                        .expect("i64 not found"),
+                                }
                             })
                             .expect("list not found"),
                     )

@@ -26,8 +26,18 @@ impl TweetId {
 #[derive(Debug)]
 struct Entry {
     id: TweetId,
-    authod_id: UserId,
+    author_id: UserId,
     timestamp: i64,
+}
+
+impl Entry {
+    fn to_timeline_tweet(&self) -> TimelineTweet {
+        TimelineTweet {
+            tweet_id: self.id.0.clone(),
+            author_id: self.author_id.0.clone(),
+            timestamp: self.timestamp,
+        }
+    }
 }
 
 struct State {
@@ -53,6 +63,7 @@ impl Guest for Component {
     fn update_timeline(
         user_id: String,
         tweet_id: String,
+        author_id: String,
         timestamp: i64,
         action: TimelineAction,
     ) -> Result<bool, ()> {
@@ -64,11 +75,12 @@ impl Guest for Component {
         STATE.with_borrow_mut(|state| match state.entries.get_mut(&user_id) {
             Some(entries) => {
                 let tweet_id = TweetId::from(tweet_id);
+                let author_id = UserId::from(author_id);
                 match action {
                     TimelineAction::Insert => {
                         entries.push(Entry {
                             id: tweet_id,
-                            authod_id: user_id,
+                            author_id,
                             timestamp,
                         });
                         entries.sort_by_key(|entry| entry.timestamp);
@@ -84,12 +96,15 @@ impl Guest for Component {
         })
     }
 
-    //  get-timeline: func(user-id: string) -> result<list<string>>;
-    fn get_timeline(user_id: String) -> Result<Vec<String>, ()> {
+    //  get-timeline: func(user-id: string) -> result<list<timeline-tweet>>;
+    fn get_timeline(user_id: String) -> Result<Vec<TimelineTweet>, ()> {
         println!("Getting timeline for user with id: {}", user_id);
         let user_id = UserId::from(user_id);
         STATE.with_borrow(|state| match state.entries.get(&user_id) {
-            Some(entries) => Ok(entries.iter().map(|entry| entry.id.0.clone()).collect()),
+            Some(entries) => Ok(entries
+                .iter()
+                .map(|entry| entry.to_timeline_tweet())
+                .collect()),
             None => Err(()),
         })
     }

@@ -45,6 +45,8 @@ impl Tweet {
     fn to_posted_tweet(&self) -> PostedTweet {
         PostedTweet {
             tweet_id: self.id.0.clone(),
+            author_id: self.author_id.0.clone(),
+            content: self.content.clone(),
             timestamp: self.timestamp,
         }
     }
@@ -96,6 +98,20 @@ impl Guest for Component {
                 .map(|tweet| tweet.to_posted_tweet().clone())
                 .collect()),
             None => Err(()),
+        })
+    }
+
+    // get-specific-tweets: func(user-id: string, tweet-ids: list<string>) -> result<list<posted-tweet>>;
+    fn get_specific_tweets(
+        user_id: String,
+        tweet_ids: Vec<String>,
+    ) -> Result<Vec<PostedTweet>, ()> {
+        println!("Getting specific tweets for user with id: {}", user_id);
+        Self::get_user_tweets(user_id).map(|tweets| {
+            tweets
+                .into_iter()
+                .filter(|tweet| tweet_ids.contains(&tweet.tweet_id))
+                .collect()
         })
     }
 }

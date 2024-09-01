@@ -3,6 +3,8 @@ package component: tweet-management;
 interface tweet-api {
   record posted-tweet {
     tweet-id: string,
+    author-id: string,
+    content: string,
     timestamp: s64,
   }
 
@@ -11,6 +13,9 @@ interface tweet-api {
 
   // Get tweets for a specific user
   get-user-tweets: func(user-id: string) -> result<list<posted-tweet>>; // list of tweets
+
+  // Get tweets from a list of tweet-ids
+  get-specific-tweets: func(user-id: string, tweet-ids: list<string>) -> result<list<posted-tweet>>; // list of tweets
 }
 
 world tweet-management {
