@@ -6,14 +6,27 @@ use blake2::Digest;
 use std::cell::RefCell;
 use std::collections::BTreeMap;
 
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+struct WorkerId(String);
+
+impl WorkerId {
+    fn from(u: u64) -> Self {
+        WorkerId(u.to_string())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Copy, Eq, PartialOrd, Ord)]
+struct WorkerHash(u64);
+
 #[derive(Debug, Clone, PartialEq)]
 struct Worker {
-    id: String,
+    id: WorkerId,
+    hash: WorkerHash,
 }
 
 struct State {
     workers_count: u64,
-    workers: BTreeMap<u64, Worker>,
+    workers: BTreeMap<WorkerHash, Worker>,
 }
 
 impl State {
@@ -31,13 +44,13 @@ thread_local! {
 
 struct Component;
 
-fn hash(input: &str) -> u64 {
+fn hash(input: &str) -> WorkerHash {
     let mut hasher = blake2::Blake2b512::new();
     hasher.update(input.as_bytes());
     let result = hasher.finalize();
     // Convert the first 8 bytes of the hash into u64
     let bytes: [u8; 8] = result[..8].try_into().expect("slice with incorrect length");
-    u64::from_le_bytes(bytes)
+    WorkerHash(u64::from_le_bytes(bytes))
 }
 
 fn get_user_worker_urn(user_id: String) -> String {
@@ -51,7 +64,7 @@ fn get_user_worker_urn(user_id: String) -> String {
     };
     let component_id =
         std::env::var("USER_MANAGER_COMPONENT_ID").expect("USER_MANAGER_COMPONENT_ID not set");
-    format!("urn:worker:{component_id}/user-manager-{worker_id}")
+    format!("urn:worker:{component_id}/user-manager-{}", worker_id.0)
 }
 fn get_tweet_worker_urn() -> String {
     let component_id =
@@ -66,16 +79,19 @@ fn get_timeline_worker_urn() -> String {
 
 fn add_worker(worker_id: String) -> Option<Worker> {
     let worker_hash = hash(worker_id.as_str());
-    println!("Adding worker with hash: {}", worker_hash);
+    println!("Adding worker with hash: {}", worker_hash.0);
     STATE.with(|state| {
         let mut s = state.borrow_mut();
-        s.workers_count += 1;
         let worker = Worker {
-            id: s.workers_count.to_string(),
+            id: WorkerId::from(s.workers_count + 1),
+            hash: worker_hash,
         };
         match s.workers.insert(worker_hash, worker.clone()) {
+            None => {
+                s.workers_count += 1;
+                Some(worker)
+            }
             Some(_) => None,
-            None => Some(worker),
         }
     })
     // TODO: Rebalance workers data
@@ -84,14 +100,15 @@ fn add_worker(worker_id: String) -> Option<Worker> {
 #[allow(unused)]
 fn remove_worker(worker_id: String) -> bool {
     let worker_hash = hash(&worker_id);
-    println!("Removing worker with hash: {}", worker_hash);
+    println!("Removing worker with hash: {}", worker_hash.0);
     STATE.with(|state| {
         let mut s = state.borrow_mut();
-        if s.workers.remove(&worker_hash).is_some() {
-            s.workers_count -= 1;
-            true
-        } else {
-            false
+        match s.workers.remove(&worker_hash) {
+            Some(_) => {
+                s.workers_count -= 1;
+                true
+            }
+            None => false,
         }
     })
     // TODO: Rebalance workers data
@@ -101,7 +118,7 @@ fn get_responsible_worker(key: String) -> Option<Worker> {
     let worker_hash = hash(key.as_str());
     println!(
         "Getting responsible worker for key: {} (hash: {})",
-        key, worker_hash
+        key, worker_hash.0
     );
     STATE.with(|state| {
         let s = state.borrow();
@@ -257,44 +274,112 @@ fn compose_timeline(urn: String, user_id: String) -> Result<Vec<TimelineData>, (
     })
 }
 
-impl Guest for Component {
-    // notify-new-tweet: func(tweet-id: string, user-id: string, followers: list<string>) -> result<bool>;
-    fn notify_new_tweet(
-        tweet_id: String,
-        user_id: String,
-        _followers: Vec<String>,
-    ) -> Result<bool, ()> {
-        println!(
-            "Notifying followers of user with id: {} about new tweet with id: {}",
-            user_id, tweet_id
-        );
-        Ok(true)
-    }
+fn orchestrate_follow(user_id: String, target_user_id: String) -> Result<bool, ()> {
+    println!(
+        "Orchestrating follow for user {} and target user {}",
+        user_id, target_user_id
+    );
 
-    // inform-follow-change: func(user-id: string, target-user-id: string, action: action) -> result<bool>;
-    fn inform_follow_change(
+    let user_urn = get_user_worker_urn(user_id.clone());
+    let target_user_urn = get_user_worker_urn(target_user_id.clone());
+
+    use bindings::component::user_management_stub::stub_user_management::*;
+    use bindings::golem::rpc::types::Uri;
+
+    let user_api = UserApi::new(&Uri { value: user_urn });
+    let target_user_api = UserApi::new(&Uri {
+        value: target_user_urn,
+    });
+
+    let follow_result = user_api.blocking_follow_user(user_id.as_str(), target_user_id.as_str());
+    let follow_back_result =
+        target_user_api.blocking_follow_user(target_user_id.as_str(), user_id.as_str());
+
+    match (follow_result, follow_back_result) {
+        (Ok(_), Ok(_)) => Ok(true),
+        // TODO: Log inconsistent state, if happens
+        (Err(_), Ok(_)) => {
+            let _ =
+                target_user_api.blocking_unfollow_user(target_user_id.as_str(), user_id.as_str());
+            Err(())
+        }
+        (Ok(_), Err(_)) => {
+            let _ = user_api.blocking_unfollow_user(user_id.as_str(), target_user_id.as_str());
+            Err(())
+        }
+        (Err(_), Err(_)) => Err(()),
+    }
+}
+
+fn orchestrate_unfollow(user_id: String, target_user_id: String) -> Result<bool, ()> {
+    println!(
+        "Orchestrating unfollow for user {} and target user {}",
+        user_id, target_user_id
+    );
+
+    let user_urn = get_user_worker_urn(user_id.clone());
+    let target_user_urn = get_user_worker_urn(target_user_id.clone());
+
+    use bindings::component::user_management_stub::stub_user_management::*;
+    use bindings::golem::rpc::types::Uri;
+
+    let user_api = UserApi::new(&Uri { value: user_urn });
+    let target_user_api = UserApi::new(&Uri {
+        value: target_user_urn,
+    });
+
+    let unfollow_result =
+        user_api.blocking_unfollow_user(user_id.as_str(), target_user_id.as_str());
+    let unfollow_back_result =
+        target_user_api.blocking_unfollow_user(target_user_id.as_str(), user_id.as_str());
+
+    match (unfollow_result, unfollow_back_result) {
+        (Ok(_), Ok(_)) => Ok(true),
+        // TODO: Log inconsistent state, if happens
+        (Err(_), Ok(_)) => {
+            let _ = target_user_api.blocking_follow_user(target_user_id.as_str(), user_id.as_str());
+            Err(())
+        }
+        (Ok(_), Err(_)) => {
+            let _ = user_api.blocking_follow_user(user_id.as_str(), target_user_id.as_str());
+            Err(())
+        }
+        (Err(_), Err(_)) => Err(()),
+    }
+}
+
+impl Guest for Component {
+    // route-action: func(action: action, user-id: string, target-user-id: string) -> router-action-response;
+    fn route_action(
+        action: Action,
         user_id: String,
         target_user_id: String,
-        action: Action,
-    ) -> Result<bool, ()> {
+    ) -> RouterActionResponse {
+        use bindings::exports::component::router::router_api::RouterActionResponse::*;
         println!(
-            "Informing user with id: {} about follow change for user with id: {} with action: {:?}",
-            user_id, target_user_id, action
+            "Routing action of type: {:?} for user: {} and target user: {}",
+            action, user_id, target_user_id
         );
-        Ok(true)
+        match action {
+            Action::Follow => orchestrate_follow(user_id, target_user_id)
+                .map(|_| Success)
+                .unwrap_or_else(|_| Failure("Failed to follow".to_string())),
+            Action::Unfollow => orchestrate_unfollow(user_id, target_user_id)
+                .map(|_| Success)
+                .unwrap_or_else(|_| Failure("Failed to unfollow".to_string())),
+        }
     }
 
-    // route-query: func(query-type: query-type, key: string, data: string) -> result<string>;
-    fn route_query(query_type: QueryType, key: String, data: String) -> RouterResponse {
-        use bindings::exports::component::router::router_api::RouterResponse::*;
+    // route-query: func(query-type: query-type, user-id: string) -> router-query-response;
+    fn route_query(query_type: QueryType, user_id: String) -> RouterQueryResponse {
+        use bindings::exports::component::router::router_api::RouterQueryResponse::*;
         println!(
-            "Routing query of type: {:?} for key: {} with data: {}",
-            query_type, key, data
+            "Routing query of type: {:?} for user: {}",
+            query_type, user_id
         );
         match query_type {
             QueryType::UserProfile => {
                 println!("Query type: UserProfile");
-                let user_id = key;
                 let worker_urn = get_user_worker_urn(user_id.clone());
                 compose_user_profile(worker_urn, user_id)
                     .map(UserProfileResponse)
@@ -302,7 +387,6 @@ impl Guest for Component {
             }
             QueryType::UserFollowers => {
                 println!("Query type: UserFollowers");
-                let user_id = key;
                 let worker_urn = get_user_worker_urn(user_id.clone());
                 get_followers(worker_urn, user_id)
                     .map(UserFollowersResponse)
@@ -310,7 +394,6 @@ impl Guest for Component {
             }
             QueryType::UserFollowing => {
                 println!("Query type: UserFollowing");
-                let user_id = key;
                 let worker_urn = get_user_worker_urn(user_id.clone());
                 get_following(worker_urn, user_id)
                     .map(UserFollowingResponse)
@@ -318,7 +401,6 @@ impl Guest for Component {
             }
             QueryType::UserTweets => {
                 println!("Query type: UserTweets");
-                let user_id = key;
                 compose_tweets(get_tweet_worker_urn(), user_id)
                     .map(UserTweetsResponse)
                     .unwrap_or_else(|_| Failure("Failed to get tweets".to_string()))
@@ -329,7 +411,6 @@ impl Guest for Component {
             }
             QueryType::UserTimeline => {
                 println!("Query type: UserTimeline");
-                let user_id = key;
                 compose_timeline(get_timeline_worker_urn(), user_id)
                     .map(UserTimelineResponse)
                     .unwrap_or_else(|_| Failure("Failed to get timeline".to_string()))
@@ -360,7 +441,10 @@ mod tests {
     fn test_get_responsible_worker() {
         let worker_id = "test_worker_id".to_string();
         add_worker(worker_id.clone());
-        assert_eq!(get_responsible_worker(worker_id.clone()).unwrap().id, "1");
+        assert_eq!(
+            get_responsible_worker(worker_id.clone()).unwrap().id,
+            WorkerId::from(1)
+        );
     }
 
     #[test]
@@ -369,7 +453,8 @@ mod tests {
         assert_eq!(
             add_worker(worker_id.clone()),
             Some(Worker {
-                id: "1".to_string()
+                id: WorkerId::from(1),
+                hash: hash(worker_id.as_str())
             })
         );
         assert_eq!(add_worker(worker_id), None);

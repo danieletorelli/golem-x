@@ -35,7 +35,12 @@ interface router-api {
     user-id: string,
   }
 
-  variant router-response {
+  variant router-action-response {
+    success,
+    failure(string),
+  }
+
+  variant router-query-response {
     user-profile-response(user-profile),
     user-followers-response(list<string>),
     user-following-response(list<string>),
@@ -44,14 +49,11 @@ interface router-api {
     failure(string),
   }
 
-  // Notify about new tweets, handling the distribution to timeline management components
-  notify-new-tweet: func(tweet-id: string, user-id: string, followers: list<string>) -> result<bool>; // success
-
-  // Inform about user follow/unfollow actions, managing updates to timelines
-  inform-follow-change: func(user-id: string, target-user-id: string, action: action) -> result<bool>; // success
+  // Route actions to appropriate workers based on consistent hashing or other criteria
+  route-action: func(action: action, user-id: string, target-user-id: string) -> router-action-response; // response
 
   // Route queries to appropriate workers based on consistent hashing or other criteria
-  route-query: func(query-type: query-type, key: string, data: string) -> router-response; // response
+  route-query: func(query-type: query-type, user-id: string) -> router-query-response; // response
 }
 
 world router {
