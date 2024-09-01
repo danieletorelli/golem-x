@@ -1,8 +1,8 @@
 #[allow(warnings)]
 mod bindings;
 
-use crate::bindings::component::timeline_management_stub::stub_timeline_management::TimelineAction;
-use crate::bindings::component::tweet_management_stub::stub_tweet_management::PostedTweet;
+use bindings::component::timeline_management_stub::stub_timeline_management::TimelineAction;
+use bindings::component::tweet_management_stub::stub_tweet_management::PostedTweet;
 use bindings::exports::component::router::router_api::*;
 use blake2::Digest;
 use std::cell::RefCell;
@@ -182,9 +182,26 @@ fn get_tweets(user_id: String) -> Result<Vec<PostedTweet>, ()> {
     api.blocking_get_user_tweets(user_id.as_str())
 }
 
+fn get_specific_tweets(user_id: String, tweet_ids: Vec<String>) -> Result<Vec<PostedTweet>, ()> {
+    println!(
+        "Getting specific tweets for user with id: {}",
+        user_id.clone()
+    );
+
+    use bindings::component::tweet_management_stub::stub_tweet_management::*;
+    use bindings::golem::rpc::types::Uri;
+
+    let api = TweetApi::new(&Uri {
+        value: get_tweet_worker_urn(user_id.clone()),
+    });
+
+    api.blocking_get_specific_tweets(user_id.as_str(), tweet_ids.as_slice())
+}
+
 fn update_timeline(
     user_id: String,
     tweet_id: String,
+    author_id: String,
     timestamp: i64,
     action: TimelineAction,
 ) -> Result<bool, ()> {
@@ -202,10 +219,16 @@ fn update_timeline(
         value: get_timeline_worker_urn(user_id.clone()),
     });
 
-    api.blocking_update_timeline(user_id.as_str(), tweet_id.as_str(), timestamp, action)
+    api.blocking_update_timeline(
+        user_id.as_str(),
+        tweet_id.as_str(),
+        author_id.as_str(),
+        timestamp,
+        action,
+    )
 }
 
-fn get_timeline(user_id: String) -> Result<Vec<String>, ()> {
+fn get_timeline(user_id: String) -> Result<Vec<Tweet>, ()> {
     println!("Getting timeline for user with id: {}", user_id.clone());
 
     use bindings::component::timeline_management_stub::stub_timeline_management::*;
@@ -216,6 +239,42 @@ fn get_timeline(user_id: String) -> Result<Vec<String>, ()> {
     });
 
     api.blocking_get_timeline(user_id.as_str())
+        .and_then(|tweets| {
+            // Group tweets by author id, fetch their content and return them sorted by timestamp
+            let mut tweets_by_author: BTreeMap<String, Vec<TimelineTweet>> = BTreeMap::new();
+            for tweet in tweets {
+                tweets_by_author
+                    .entry(tweet.author_id.clone())
+                    .or_default()
+                    .push(tweet);
+            }
+            // Iterate over user ids and fetch their content
+            let mut expanded_tweets: BTreeMap<String, Vec<PostedTweet>> = BTreeMap::new();
+            for (author_id, tweets) in tweets_by_author {
+                let author_tweets = get_specific_tweets(
+                    user_id.clone(),
+                    tweets
+                        .into_iter()
+                        .map(|tweet| tweet.tweet_id)
+                        .collect::<Vec<_>>(),
+                )?;
+                expanded_tweets.insert(author_id, author_tweets);
+            }
+            // Tweets of all users, sorted by timestamp
+            let mut timeline: Vec<Tweet> = expanded_tweets
+                .into_iter()
+                .flat_map(|(author_id, tweets)| {
+                    tweets.into_iter().map(move |tweet| Tweet {
+                        tweet_id: tweet.tweet_id,
+                        author_id: author_id.clone(),
+                        content: tweet.content,
+                        timestamp: tweet.timestamp,
+                    })
+                })
+                .collect();
+            timeline.sort_by_key(|tweet| tweet.timestamp);
+            Ok(timeline)
+        })
 }
 
 fn get_username(urn: String, user_id: String) -> Result<String, ()> {
@@ -291,7 +350,15 @@ fn compose_tweets(urn: String, user_id: String) -> Result<TweetData, ()> {
 
     get_tweets(user_id.clone()).map(|tweets| TweetData {
         user_id,
-        tweets: tweets.into_iter().map(|tweet| tweet.tweet_id).collect(),
+        tweets: tweets
+            .into_iter()
+            .map(|tweet| Tweet {
+                tweet_id: tweet.tweet_id,
+                author_id: tweet.author_id,
+                content: tweet.content,
+                timestamp: tweet.timestamp,
+            })
+            .collect(),
     })
 }
 
@@ -301,9 +368,9 @@ fn compose_timeline(urn: String, user_id: String) -> Result<Vec<TimelineData>, (
     get_timeline(user_id.clone()).map(|tweets| {
         tweets
             .into_iter()
-            .map(|tweet_id| TimelineData {
-                tweet_id,
-                user_id: user_id.clone(),
+            .map(|tweet| TimelineData {
+                author_id: tweet.author_id.clone(),
+                tweet: tweet.clone(),
             })
             .collect()
     })
@@ -341,6 +408,7 @@ fn orchestrate_follow(user_id: String, target_user_id: String) -> Result<bool, (
                             update_timeline(
                                 user_id.clone(),
                                 tweet.tweet_id,
+                                target_user_id.clone(),
                                 tweet.timestamp,
                                 TimelineAction::Insert,
                             )
@@ -396,6 +464,7 @@ fn orchestrate_unfollow(user_id: String, target_user_id: String) -> Result<bool,
                             update_timeline(
                                 user_id.clone(),
                                 tweet.tweet_id,
+                                target_user_id.clone(),
                                 tweet.timestamp,
                                 TimelineAction::Remove,
                             )
@@ -442,6 +511,7 @@ fn orchestrate_post_tweet(user_id: String, content: String) -> Result<String, ()
                             update_timeline(
                                 follower_id,
                                 tweet.tweet_id.clone(),
+                                user_id.clone(),
                                 tweet.timestamp,
                                 TimelineAction::Insert,
                             )
@@ -509,10 +579,6 @@ impl Guest for Component {
                 compose_tweets(worker_urn, user_id)
                     .map(UserTweetsResponse)
                     .unwrap_or_else(|_| Failure("Failed to get tweets".to_string()))
-            }
-            QueryType::TweetData => {
-                println!("Query type: TweetData");
-                Failure("Not implemented".to_string())
             }
             QueryType::UserTimeline => {
                 println!("Query type: UserTimeline");

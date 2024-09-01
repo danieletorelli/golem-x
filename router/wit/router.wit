@@ -13,7 +13,6 @@ interface router-api {
     user-followers,
     user-following,
     user-tweets,
-    tweet-data,
     user-timeline,
   }
 
@@ -24,14 +23,21 @@ interface router-api {
     following: list<string>,
   }
 
+  record tweet {
+    tweet-id: string,
+    author-id: string,
+    content: string,
+    timestamp: s64,
+  }
+
   record tweet-data {
     user-id: string,
-    tweets: list<string>,
+    tweets: list<tweet>,
   }
 
   record timeline-data {
-    tweet-id: string,
-    user-id: string,
+    author-id: string,
+    tweet: tweet,
   }
 
   variant router-action-response {
