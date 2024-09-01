@@ -117,6 +117,8 @@ for TimelineApi {
         &self,
         user_id: String,
         tweet_id: String,
+        timestamp: i64,
+        action: crate::bindings::component::timeline_management::timeline_api::TimelineAction,
     ) -> Result<bool, ()> {
         let result = self
             .rpc
@@ -125,6 +127,18 @@ for TimelineApi {
                 &[
                     WitValue::builder().string(&user_id),
                     WitValue::builder().string(&tweet_id),
+                    WitValue::builder().s64(timestamp),
+                    WitValue::builder()
+                        .enum_value(
+                            match action {
+                                crate::bindings::component::timeline_management::timeline_api::TimelineAction::Insert => {
+                                    0u32
+                                }
+                                crate::bindings::component::timeline_management::timeline_api::TimelineAction::Remove => {
+                                    1u32
+                                }
+                            },
+                        ),
                 ],
             )
             .expect(
@@ -156,6 +170,8 @@ for TimelineApi {
         &self,
         user_id: String,
         tweet_id: String,
+        timestamp: i64,
+        action: crate::bindings::component::timeline_management::timeline_api::TimelineAction,
     ) -> crate::bindings::exports::component::timeline_management_stub::stub_timeline_management::FutureUpdateTimelineResult {
         let result = self
             .rpc
@@ -164,6 +180,18 @@ for TimelineApi {
                 &[
                     WitValue::builder().string(&user_id),
                     WitValue::builder().string(&tweet_id),
+                    WitValue::builder().s64(timestamp),
+                    WitValue::builder()
+                        .enum_value(
+                            match action {
+                                crate::bindings::component::timeline_management::timeline_api::TimelineAction::Insert => {
+                                    0u32
+                                }
+                                crate::bindings::component::timeline_management::timeline_api::TimelineAction::Remove => {
+                                    1u32
+                                }
+                            },
+                        ),
                 ],
             );
         crate::bindings::exports::component::timeline_management_stub::stub_timeline_management::FutureUpdateTimelineResult::new(FutureUpdateTimelineResult {

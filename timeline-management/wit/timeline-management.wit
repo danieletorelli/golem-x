@@ -1,8 +1,13 @@
 package component: timeline-management;
 
 interface timeline-api {
+  enum timeline-action {
+    insert,
+    remove,
+  }
+
   // Update the timeline for a user when a new tweet is posted
-  update-timeline: func(user-id: string, tweet-id: string) -> result<bool>; // success
+  update-timeline: func(user-id: string, tweet-id: string, timestamp: s64, action: timeline-action) -> result<bool>; // success
 
   // Get the timeline for a specific user
   get-timeline: func(user-id: string) -> result<list<string>>; // list of tweet-ids
