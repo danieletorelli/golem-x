@@ -7,9 +7,9 @@ struct Component;
 
 impl Guest for Component {
     //  update-timeline: func(user-id: string, tweet-id: string, author-id: string) -> result<bool>;
-    fn update_timeline(user_id: String, tweet_id: Vec<String>) -> Result<bool, ()> {
+    fn update_timeline(user_id: String, tweet_id: String) -> Result<bool, ()> {
         println!(
-            "Updating timeline for user with id: {} with tweet with ids: {:?}",
+            "Updating timeline for user with id: {} with tweet id: {}",
             user_id, tweet_id
         );
         Ok(true)
