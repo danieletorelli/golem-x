@@ -6,6 +6,33 @@ edition = "2021"
 [package.metadata.component]
 package = "component:router"
 
+[package.metadata.component.target]
+path = "wit"
+
+[package.metadata.component.target.dependencies."component:timeline-management"]
+path = "wit/deps/component_timeline-management"
+
+[package.metadata.component.target.dependencies."component:timeline-management-stub"]
+path = "wit/deps/component_timeline-management-stub"
+
+[package.metadata.component.target.dependencies."component:tweet-management"]
+path = "wit/deps/component_tweet-management"
+
+[package.metadata.component.target.dependencies."component:tweet-management-stub"]
+path = "wit/deps/component_tweet-management-stub"
+
+[package.metadata.component.target.dependencies."component:user-management"]
+path = "wit/deps/component_user-management"
+
+[package.metadata.component.target.dependencies."component:user-management-stub"]
+path = "wit/deps/component_user-management-stub"
+
+[package.metadata.component.target.dependencies."golem:rpc"]
+path = "wit/deps/wasm-rpc"
+
+[package.metadata.component.target.dependencies."wasi:io"]
+path = "wit/deps/io"
+
 [dependencies]
 blake2 = "0.10.6"
 url = "2.5.2"

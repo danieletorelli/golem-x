@@ -3,6 +3,22 @@ name = "timeline-management-stub"
 version = "0.0.1"
 edition = "2021"
 
+[package.metadata.component]
+package = "component:timeline-management"
+
+[package.metadata.component.target]
+world = "wasm-rpc-stub-timeline-management"
+path = "wit"
+
+[package.metadata.component.target.dependencies."component:timeline-management"]
+path = "wit/deps/component_timeline-management"
+
+[package.metadata.component.target.dependencies."golem:rpc"]
+path = "wit/deps/wasm-rpc"
+
+[package.metadata.component.target.dependencies."wasi:io"]
+path = "wit/deps/io"
+
 [dependencies.golem-wasm-rpc]
 version = "1.0.1"
 features = ["stub"]

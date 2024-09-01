@@ -2,9 +2,6 @@
 members = ["user-management", "tweet-management", "timeline-management", "router", "user-management-stub", "tweet-management-stub", "timeline-management-stub"]
 resolver = "2"
 
-[build]
-target = "wasm32-wasi"
-
 [profile.release]
 opt-level = "s"
 debug = false

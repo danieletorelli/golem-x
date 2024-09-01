@@ -27,7 +27,6 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          targets: wasm32-wasi
       - name: Install cargo-binstall
         uses: cargo-bins/cargo-binstall@main
       - name: Install cargo-component
@@ -48,6 +47,8 @@ jobs:
       - name: Generate stubs
         run: cargo make regenerate-stubs
       - name: Compile
-        run: cargo make release-build-flow
+        run: |
+          sed -i 's/wasm32-wasi/wasm32-wasip1/g' Makefile.toml && \
+          cargo make release-build-flow
       - name: Clippy
         run: cargo clippy -- -Dwarnings
