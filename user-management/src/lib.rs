@@ -8,15 +8,8 @@ use std::collections::BTreeMap;
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 struct UserId(String);
 
-impl UserId {
-    fn from(n: u64) -> Self {
-        UserId(n.to_string())
-    }
-}
-
 #[derive(Debug)]
 struct User {
-    id: UserId,
     username: String,
     profile_picture: Vec<u8>,
     followers: Vec<UserId>,
@@ -24,9 +17,8 @@ struct User {
 }
 
 impl User {
-    fn new(id: UserId, username: String) -> Self {
+    fn new(username: String) -> Self {
         User {
-            id,
             username,
             profile_picture: vec![],
             followers: vec![],
@@ -65,7 +57,7 @@ impl Guest for Component {
             Err(())
         } else {
             STATE.with_borrow_mut(|state| {
-                let user = User::new(user_id.clone(), username);
+                let user = User::new(username);
                 match state.users.insert(user_id.clone(), user) {
                     None => {
                         state.users_count += 1;
