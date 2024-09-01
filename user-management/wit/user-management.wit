@@ -1,6 +1,6 @@
 package component: user-management;
 
-interface api {
+interface user-api {
   // Creates a new user profile
   create-user: func(username: string) -> result<string>; // user-id
 
@@ -16,6 +16,9 @@ interface api {
   // Unfollow another user
   unfollow-user: func(user-id: string, target-user-id: string) -> result<bool>; // success
 
+  // Get username
+  get-username: func(user-id: string) -> result<string>; // username
+
   // Retrieves the list of followers for a user
   get-followers: func(user-id: string) -> result<list<string>>; // list of user-ids
 
@@ -24,5 +27,5 @@ interface api {
 }
 
 world user-management {
-  export api;
+  export user-api;
 }

@@ -1,7 +1,7 @@
 #[allow(warnings)]
 mod bindings;
 
-use bindings::exports::component::timeline_management::api::*;
+use bindings::exports::component::timeline_management::timeline_api::*;
 
 struct Component;
 

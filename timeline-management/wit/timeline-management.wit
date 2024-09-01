@@ -1,6 +1,6 @@
 package component: timeline-management;
 
-interface api {
+interface timeline-api {
   // Update the timeline for a user when a new tweet is posted
   update-timeline: func(user-id: string, tweet-ids: list<string>) -> result<bool>; // success
 
@@ -9,5 +9,5 @@ interface api {
 }
 
 world timeline-management {
-  export api;
+  export timeline-api;
 }

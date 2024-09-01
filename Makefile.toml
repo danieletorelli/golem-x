@@ -1,23 +1,23 @@
 [config]
 default_to_workspace = false
 
-[tasks.add-stub-dependency-timeline_management-router]
-args = ["stubgen", "add-stub-dependency", "--stub-wit-root", "timeline_management-stub/wit", "--dest-wit-root", "router/wit", "--overwrite", "--update-cargo-toml"]
+[tasks.add-stub-dependency-timeline-management-router]
+args = ["stubgen", "add-stub-dependency", "--stub-wit-root", "timeline-management-stub/wit", "--dest-wit-root", "router/wit", "--overwrite", "--update-cargo-toml"]
 command = "golem-cli"
 cwd = "."
-dependencies = ["generate-timeline_management-stub"]
+dependencies = ["generate-timeline-management-stub"]
 
-[tasks.add-stub-dependency-tweet_management-router]
-args = ["stubgen", "add-stub-dependency", "--stub-wit-root", "tweet_management-stub/wit", "--dest-wit-root", "router/wit", "--overwrite", "--update-cargo-toml"]
+[tasks.add-stub-dependency-tweet-management-router]
+args = ["stubgen", "add-stub-dependency", "--stub-wit-root", "tweet-management-stub/wit", "--dest-wit-root", "router/wit", "--overwrite", "--update-cargo-toml"]
 command = "golem-cli"
 cwd = "."
-dependencies = ["generate-tweet_management-stub"]
+dependencies = ["generate-tweet-management-stub"]
 
-[tasks.add-stub-dependency-user_management-router]
-args = ["stubgen", "add-stub-dependency", "--stub-wit-root", "user_management-stub/wit", "--dest-wit-root", "router/wit", "--overwrite", "--update-cargo-toml"]
+[tasks.add-stub-dependency-user-management-router]
+args = ["stubgen", "add-stub-dependency", "--stub-wit-root", "user-management-stub/wit", "--dest-wit-root", "router/wit", "--overwrite", "--update-cargo-toml"]
 command = "golem-cli"
 cwd = "."
-dependencies = ["generate-user_management-stub"]
+dependencies = ["generate-user-management-stub"]
 
 [tasks.build]
 args = ["build"]
@@ -49,18 +49,18 @@ cwd = "."
 [tasks.default]
 alias = "build"
 
-[tasks.generate-timeline_management-stub]
-args = ["stubgen", "generate", "-s", "timeline_management/wit", "-d", "timeline_management-stub"]
+[tasks.generate-timeline-management-stub]
+args = ["stubgen", "generate", "-s", "timeline-management/wit", "-d", "timeline-management-stub"]
 command = "golem-cli"
 cwd = "."
 
-[tasks.generate-tweet_management-stub]
-args = ["stubgen", "generate", "-s", "tweet_management/wit", "-d", "tweet_management-stub"]
+[tasks.generate-tweet-management-stub]
+args = ["stubgen", "generate", "-s", "tweet-management/wit", "-d", "tweet-management-stub"]
 command = "golem-cli"
 cwd = "."
 
-[tasks.generate-user_management-stub]
-args = ["stubgen", "generate", "-s", "user_management/wit", "-d", "user_management-stub"]
+[tasks.generate-user-management-stub]
+args = ["stubgen", "generate", "-s", "user-management/wit", "-d", "user-management-stub"]
 command = "golem-cli"
 cwd = "."
 
@@ -71,7 +71,7 @@ dependencies = ["compose-router"]
 dependencies = ["compose-release-router"]
 
 [tasks.regenerate-stubs]
-dependencies = ["add-stub-dependency-user_management-router", "add-stub-dependency-tweet_management-router", "add-stub-dependency-timeline_management-router"]
+dependencies = ["add-stub-dependency-user-management-router", "add-stub-dependency-tweet-management-router", "add-stub-dependency-timeline-management-router"]
 
 [tasks.release-build-flow]
 dependencies = ["build-release", "post-build-release"]

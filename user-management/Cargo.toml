@@ -1,5 +1,5 @@
 [package]
-name = "tweet_management"
+name = "user-management"
 version = "0.1.0"
 edition = "2021"
 
@@ -10,6 +10,6 @@ wit-bindgen-rt = { version = "0.30.0", features = ["bitflags"] }
 crate-type = ["cdylib"]
 
 [package.metadata.component]
-package = "component:tweet-management"
+package = "component:user-management"
 
 [package.metadata.component.dependencies]

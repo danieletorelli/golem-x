@@ -1,6 +1,6 @@
 package component: tweet-management;
 
-interface api {
+interface tweet-api {
   // Post a new tweet
   post-tweet: func(user-id: string, content: string) -> result<string>; // tweet-id
 
@@ -9,5 +9,5 @@ interface api {
 }
 
 world tweet-management {
-  export api;
+  export tweet-api;
 }

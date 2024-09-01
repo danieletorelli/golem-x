@@ -1,7 +1,7 @@
 #[allow(warnings)]
 mod bindings;
 
-use bindings::exports::component::tweet_management::api::*;
+use bindings::exports::component::tweet_management::tweet_api::*;
 
 struct Component;
 

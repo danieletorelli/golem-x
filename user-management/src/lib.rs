@@ -1,13 +1,11 @@
 #[allow(warnings)]
 mod bindings;
 
-use bindings::exports::component::user_management::api::*;
+use bindings::exports::component::user_management::user_api::*;
 
 struct Component;
 
 impl Guest for Component {
-    // Create stub implementation for user_management.wit
-
     // create-user: func(username: string) -> result<string>;
     fn create_user(username: String) -> Result<String, ()> {
         println!("Creating user with username: {}", username);
@@ -42,6 +40,12 @@ impl Guest for Component {
             user_id, target_user_id
         );
         Ok(true)
+    }
+
+    // get-username: func(user-id: string) -> result<string>;
+    fn get_username(user_id: String) -> Result<String, ()> {
+        println!("Getting username for user with id: {}", user_id);
+        Ok("".to_string())
     }
 
     // get-followers: func(user-id: string) -> result<list<string>>;
