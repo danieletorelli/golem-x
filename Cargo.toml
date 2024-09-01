@@ -1,5 +1,5 @@
 [workspace]
-members = ["user-management", "tweet-management", "timeline-management", "router"]
+members = ["user-management", "tweet-management", "timeline-management", "router", "user-management-stub", "tweet-management-stub", "timeline-management-stub"]
 resolver = "2"
 
 [profile.release]

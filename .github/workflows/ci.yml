@@ -44,20 +44,11 @@ jobs:
             sudo mv golem-cli /usr/local/bin/
           else echo "golem-cli is already installed"
           fi
-      - name: Compile components
-        run: cargo component build --release
       - name: Check formatting
         run: cargo fmt -- --check
       - name: Clippy
         run: cargo clippy -- -Dwarnings
       - name: Generate stubs
         run: cargo make regenerate-stubs
-      - name: Add stub members to Cargo.toml
-        run: |
-          new_members=("user-management-stub" "tweet-management-stub" "timeline-management-stub")
-          members=$(grep 'members' Cargo.toml)
-          new_members_string=$(printf ' "%s",' "${new_members[@]}")
-          sed -i "s/$members/&$new_members_string/" Cargo.toml
-          sed -i 's/,\]/\]/' Cargo.toml
       - name: Compile
         run: cargo make release-build-flow

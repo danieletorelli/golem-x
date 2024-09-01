@@ -1,0 +1,23 @@
+[package]
+name = "tweet-management-stub"
+version = "0.0.1"
+edition = "2021"
+
+[dependencies.golem-wasm-rpc]
+version = "1.0.1"
+features = ["stub"]
+default-features = false
+
+[dependencies.wit-bindgen-rt]
+version = "0.26.0"
+features = ["bitflags"]
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["cdylib"]
+required-features = []
+
+[profile.release]
+opt-level = "s"
+lto = true
+strip = true
