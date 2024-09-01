@@ -21,6 +21,12 @@ pub struct FutureFollowUserResult {
 pub struct FutureUnfollowUserResult {
     pub future_invoke_result: FutureInvokeResult,
 }
+pub struct FutureFollowedByUserResult {
+    pub future_invoke_result: FutureInvokeResult,
+}
+pub struct FutureUnfollowedByUserResult {
+    pub future_invoke_result: FutureInvokeResult,
+}
 pub struct FutureGetUsernameResult {
     pub future_invoke_result: FutureInvokeResult,
 }
@@ -39,6 +45,8 @@ for Component {
     type FutureGetProfilePictureResult = crate::FutureGetProfilePictureResult;
     type FutureFollowUserResult = crate::FutureFollowUserResult;
     type FutureUnfollowUserResult = crate::FutureUnfollowUserResult;
+    type FutureFollowedByUserResult = crate::FutureFollowedByUserResult;
+    type FutureUnfollowedByUserResult = crate::FutureUnfollowedByUserResult;
     type FutureGetUsernameResult = crate::FutureGetUsernameResult;
     type FutureGetFollowersResult = crate::FutureGetFollowersResult;
     type FutureGetFollowingResult = crate::FutureGetFollowingResult;
@@ -226,6 +234,88 @@ for FutureUnfollowUserResult {
                         &format!(
                             "Failed to invoke remote {}",
                             "component:user-management/user-api.{unfollow-user}"
+                        ),
+                    );
+                ({
+                    let result = result
+                        .tuple_element(0)
+                        .expect("tuple not found")
+                        .result()
+                        .expect("result not found");
+                    match result {
+                        Ok(ok_value) => {
+                            Ok(
+                                ok_value
+                                    .expect("result ok value not found")
+                                    .bool()
+                                    .expect("bool not found"),
+                            )
+                        }
+                        Err(err_value) => Err(()),
+                    }
+                })
+            })
+    }
+}
+impl crate::bindings::exports::component::user_management_stub::stub_user_management::GuestFutureFollowedByUserResult
+for FutureFollowedByUserResult {
+    fn subscribe(&self) -> bindings::wasi::io::poll::Pollable {
+        let pollable = self.future_invoke_result.subscribe();
+        let pollable = unsafe {
+            bindings::wasi::io::poll::Pollable::from_handle(pollable.take_handle())
+        };
+        pollable
+    }
+    fn get(&self) -> Option<Result<bool, ()>> {
+        self.future_invoke_result
+            .get()
+            .map(|result| {
+                let result = result
+                    .expect(
+                        &format!(
+                            "Failed to invoke remote {}",
+                            "component:user-management/user-api.{followed-by-user}"
+                        ),
+                    );
+                ({
+                    let result = result
+                        .tuple_element(0)
+                        .expect("tuple not found")
+                        .result()
+                        .expect("result not found");
+                    match result {
+                        Ok(ok_value) => {
+                            Ok(
+                                ok_value
+                                    .expect("result ok value not found")
+                                    .bool()
+                                    .expect("bool not found"),
+                            )
+                        }
+                        Err(err_value) => Err(()),
+                    }
+                })
+            })
+    }
+}
+impl crate::bindings::exports::component::user_management_stub::stub_user_management::GuestFutureUnfollowedByUserResult
+for FutureUnfollowedByUserResult {
+    fn subscribe(&self) -> bindings::wasi::io::poll::Pollable {
+        let pollable = self.future_invoke_result.subscribe();
+        let pollable = unsafe {
+            bindings::wasi::io::poll::Pollable::from_handle(pollable.take_handle())
+        };
+        pollable
+    }
+    fn get(&self) -> Option<Result<bool, ()>> {
+        self.future_invoke_result
+            .get()
+            .map(|result| {
+                let result = result
+                    .expect(
+                        &format!(
+                            "Failed to invoke remote {}",
+                            "component:user-management/user-api.{unfollowed-by-user}"
                         ),
                     );
                 ({
@@ -656,6 +746,120 @@ for UserApi {
                 ],
             );
         crate::bindings::exports::component::user_management_stub::stub_user_management::FutureUnfollowUserResult::new(FutureUnfollowUserResult {
+            future_invoke_result: result,
+        })
+    }
+    fn blocking_followed_by_user(
+        &self,
+        user_id: String,
+        target_user_id: String,
+    ) -> Result<bool, ()> {
+        let result = self
+            .rpc
+            .invoke_and_await(
+                "component:user-management/user-api.{followed-by-user}",
+                &[
+                    WitValue::builder().string(&user_id),
+                    WitValue::builder().string(&target_user_id),
+                ],
+            )
+            .expect(
+                &format!(
+                    "Failed to invoke-and-await remote {}",
+                    "component:user-management/user-api.{followed-by-user}"
+                ),
+            );
+        ({
+            let result = result
+                .tuple_element(0)
+                .expect("tuple not found")
+                .result()
+                .expect("result not found");
+            match result {
+                Ok(ok_value) => {
+                    Ok(
+                        ok_value
+                            .expect("result ok value not found")
+                            .bool()
+                            .expect("bool not found"),
+                    )
+                }
+                Err(err_value) => Err(()),
+            }
+        })
+    }
+    fn followed_by_user(
+        &self,
+        user_id: String,
+        target_user_id: String,
+    ) -> crate::bindings::exports::component::user_management_stub::stub_user_management::FutureFollowedByUserResult {
+        let result = self
+            .rpc
+            .async_invoke_and_await(
+                "component:user-management/user-api.{followed-by-user}",
+                &[
+                    WitValue::builder().string(&user_id),
+                    WitValue::builder().string(&target_user_id),
+                ],
+            );
+        crate::bindings::exports::component::user_management_stub::stub_user_management::FutureFollowedByUserResult::new(FutureFollowedByUserResult {
+            future_invoke_result: result,
+        })
+    }
+    fn blocking_unfollowed_by_user(
+        &self,
+        user_id: String,
+        target_user_id: String,
+    ) -> Result<bool, ()> {
+        let result = self
+            .rpc
+            .invoke_and_await(
+                "component:user-management/user-api.{unfollowed-by-user}",
+                &[
+                    WitValue::builder().string(&user_id),
+                    WitValue::builder().string(&target_user_id),
+                ],
+            )
+            .expect(
+                &format!(
+                    "Failed to invoke-and-await remote {}",
+                    "component:user-management/user-api.{unfollowed-by-user}"
+                ),
+            );
+        ({
+            let result = result
+                .tuple_element(0)
+                .expect("tuple not found")
+                .result()
+                .expect("result not found");
+            match result {
+                Ok(ok_value) => {
+                    Ok(
+                        ok_value
+                            .expect("result ok value not found")
+                            .bool()
+                            .expect("bool not found"),
+                    )
+                }
+                Err(err_value) => Err(()),
+            }
+        })
+    }
+    fn unfollowed_by_user(
+        &self,
+        user_id: String,
+        target_user_id: String,
+    ) -> crate::bindings::exports::component::user_management_stub::stub_user_management::FutureUnfollowedByUserResult {
+        let result = self
+            .rpc
+            .async_invoke_and_await(
+                "component:user-management/user-api.{unfollowed-by-user}",
+                &[
+                    WitValue::builder().string(&user_id),
+                    WitValue::builder().string(&target_user_id),
+                ],
+            );
+        crate::bindings::exports::component::user_management_stub::stub_user_management::FutureUnfollowedByUserResult::new(FutureUnfollowedByUserResult {
             future_invoke_result: result,
         })
     }

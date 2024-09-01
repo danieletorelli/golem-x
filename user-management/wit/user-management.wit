@@ -16,6 +16,12 @@ interface user-api {
   // Unfollow another user
   unfollow-user: func(user-id: string, target-user-id: string) -> result<bool>; // success
 
+  // Is followed by another user
+  followed-by-user: func(user-id: string, target-user-id: string) -> result<bool>; // success
+
+  // Is unfollowed by another user
+  unfollowed-by-user: func(user-id: string, target-user-id: string) -> result<bool>; // success
+
   // Get username
   get-username: func(user-id: string) -> result<string>; // username
 
