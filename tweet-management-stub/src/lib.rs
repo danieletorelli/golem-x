@@ -28,7 +28,11 @@ for FuturePostTweetResult {
         };
         pollable
     }
-    fn get(&self) -> Option<Result<String, ()>> {
+    fn get(
+        &self,
+    ) -> Option<
+        Result<crate::bindings::component::tweet_management::tweet_api::PostedTweet, ()>,
+    > {
         self.future_invoke_result
             .get()
             .map(|result| {
@@ -47,13 +51,22 @@ for FuturePostTweetResult {
                         .expect("result not found");
                     match result {
                         Ok(ok_value) => {
-                            Ok(
-                                ok_value
-                                    .expect("result ok value not found")
-                                    .string()
-                                    .expect("string not found")
-                                    .to_string(),
-                            )
+                            Ok({
+                                let record = ok_value.expect("result ok value not found");
+                                crate::bindings::component::tweet_management::tweet_api::PostedTweet {
+                                    tweet_id: record
+                                        .field(0usize)
+                                        .expect("record field not found")
+                                        .string()
+                                        .expect("string not found")
+                                        .to_string(),
+                                    timestamp: record
+                                        .field(1usize)
+                                        .expect("record field not found")
+                                        .s64()
+                                        .expect("i64 not found"),
+                                }
+                            })
                         }
                         Err(err_value) => Err(()),
                     }
@@ -70,7 +83,14 @@ for FutureGetUserTweetsResult {
         };
         pollable
     }
-    fn get(&self) -> Option<Result<Vec<String>, ()>> {
+    fn get(
+        &self,
+    ) -> Option<
+        Result<
+            Vec<crate::bindings::component::tweet_management::tweet_api::PostedTweet>,
+            (),
+        >,
+    > {
         self.future_invoke_result
             .get()
             .map(|result| {
@@ -93,7 +113,20 @@ for FutureGetUserTweetsResult {
                                 ok_value
                                     .expect("result ok value not found")
                                     .list_elements(|item| {
-                                        item.string().expect("string not found").to_string()
+                                        let record = item;
+                                        crate::bindings::component::tweet_management::tweet_api::PostedTweet {
+                                            tweet_id: record
+                                                .field(0usize)
+                                                .expect("record field not found")
+                                                .string()
+                                                .expect("string not found")
+                                                .to_string(),
+                                            timestamp: record
+                                                .field(1usize)
+                                                .expect("record field not found")
+                                                .s64()
+                                                .expect("i64 not found"),
+                                        }
                                     })
                                     .expect("list not found"),
                             )
@@ -118,7 +151,10 @@ for TweetApi {
         &self,
         user_id: String,
         content: String,
-    ) -> Result<String, ()> {
+    ) -> Result<
+        crate::bindings::component::tweet_management::tweet_api::PostedTweet,
+        (),
+    > {
         let result = self
             .rpc
             .invoke_and_await(
@@ -142,13 +178,22 @@ for TweetApi {
                 .expect("result not found");
             match result {
                 Ok(ok_value) => {
-                    Ok(
-                        ok_value
-                            .expect("result ok value not found")
-                            .string()
-                            .expect("string not found")
-                            .to_string(),
-                    )
+                    Ok({
+                        let record = ok_value.expect("result ok value not found");
+                        crate::bindings::component::tweet_management::tweet_api::PostedTweet {
+                            tweet_id: record
+                                .field(0usize)
+                                .expect("record field not found")
+                                .string()
+                                .expect("string not found")
+                                .to_string(),
+                            timestamp: record
+                                .field(1usize)
+                                .expect("record field not found")
+                                .s64()
+                                .expect("i64 not found"),
+                        }
+                    })
                 }
                 Err(err_value) => Err(()),
             }
@@ -172,7 +217,13 @@ for TweetApi {
             future_invoke_result: result,
         })
     }
-    fn blocking_get_user_tweets(&self, user_id: String) -> Result<Vec<String>, ()> {
+    fn blocking_get_user_tweets(
+        &self,
+        user_id: String,
+    ) -> Result<
+        Vec<crate::bindings::component::tweet_management::tweet_api::PostedTweet>,
+        (),
+    > {
         let result = self
             .rpc
             .invoke_and_await(
@@ -197,7 +248,20 @@ for TweetApi {
                         ok_value
                             .expect("result ok value not found")
                             .list_elements(|item| {
-                                item.string().expect("string not found").to_string()
+                                let record = item;
+                                crate::bindings::component::tweet_management::tweet_api::PostedTweet {
+                                    tweet_id: record
+                                        .field(0usize)
+                                        .expect("record field not found")
+                                        .string()
+                                        .expect("string not found")
+                                        .to_string(),
+                                    timestamp: record
+                                        .field(1usize)
+                                        .expect("record field not found")
+                                        .s64()
+                                        .expect("i64 not found"),
+                                }
                             })
                             .expect("list not found"),
                     )
