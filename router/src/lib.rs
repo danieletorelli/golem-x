@@ -156,17 +156,16 @@ fn register_user(username: String) -> Result<String, ()> {
         value: get_user_worker_urn(available_user_id.to_string()),
     });
 
-    api.blocking_create_user(available_user_id.to_string().as_str(), username.as_str())
-        .and_then(|user_id| {
+    match api.blocking_create_user(available_user_id.to_string().as_str(), username.as_str()) {
+        Ok(user_id) => {
             if user_id != available_user_id.to_string() {
-                panic!("Unexpected user id: {}", user_id);
-            } else {
-                STATE.with_borrow_mut(|state| {
-                    state.next_user_id += 1;
-                    Ok(user_id)
-                })
+                return Err(());
             }
-        })
+            STATE.with_borrow_mut(|state| state.next_user_id += 1);
+            Ok(user_id)
+        }
+        Err(_) => Err(()),
+    }
 }
 
 fn get_tweets(user_id: String) -> Result<Vec<PostedTweet>, ()> {

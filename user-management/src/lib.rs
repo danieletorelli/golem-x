@@ -50,7 +50,10 @@ struct Component;
 impl Guest for Component {
     // create-user: func(username: string) -> result<string>;
     fn create_user(user_id: String, username: String) -> Result<String, ()> {
-        println!("Creating user with username: {}", username);
+        println!(
+            "Creating user with username: {} and user id: {}",
+            username, user_id
+        );
         let user_id = UserId(user_id);
         let exists = STATE.with_borrow(|state| state.users.contains_key(&user_id));
         if exists {
