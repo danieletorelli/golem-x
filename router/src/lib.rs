@@ -66,15 +66,31 @@ fn get_user_worker_urn(user_id: String) -> String {
         std::env::var("USER_MANAGER_COMPONENT_ID").expect("USER_MANAGER_COMPONENT_ID not set");
     format!("urn:worker:{component_id}/user-manager-{}", worker_id.0)
 }
-fn get_tweet_worker_urn() -> String {
+fn get_tweet_worker_urn(user_id: String) -> String {
+    let worker_id = match get_responsible_worker(user_id.clone()) {
+        Some(worker) => worker.id,
+        None => {
+            add_worker(user_id.clone())
+                .unwrap_or_else(|| panic!("Failed to add worker for user with id: {}", user_id))
+                .id
+        }
+    };
     let component_id =
         std::env::var("TWEET_MANAGER_COMPONENT_ID").expect("TWEET_MANAGER_COMPONENT_ID not set");
-    format!("urn:worker:{component_id}/tweet-manager")
+    format!("urn:worker:{component_id}/tweet-manager-{}", worker_id.0)
 }
-fn get_timeline_worker_urn() -> String {
-    let component_id = std::env::var("TIMELINE_MANAGER_COMPONENT_ID")
-        .expect("TIMELINE_MANAGER_COMPONENT_ID not set");
-    format!("urn:worker:{component_id}/timeline-manager")
+fn get_timeline_worker_urn(user_id: String) -> String {
+    let worker_id = match get_responsible_worker(user_id.clone()) {
+        Some(worker) => worker.id,
+        None => {
+            add_worker(user_id.clone())
+                .unwrap_or_else(|| panic!("Failed to add worker for user with id: {}", user_id))
+                .id
+        }
+    };
+    let component_id =
+        std::env::var("TWEET_MANAGER_COMPONENT_ID").expect("TWEET_MANAGER_COMPONENT_ID not set");
+    format!("urn:worker:{component_id}/tweet-manager-{}", worker_id.0)
 }
 
 fn add_worker(worker_id: String) -> Option<Worker> {
@@ -126,7 +142,7 @@ fn get_responsible_worker(key: String) -> Option<Worker> {
     })
 }
 
-fn _post_tweet(user_id: String, content: String) -> Result<String, ()> {
+fn post_tweet(user_id: String, content: String) -> Result<String, ()> {
     println!(
         "Posting tweet for user with id: {} with content: {}",
         user_id.clone(),
@@ -137,7 +153,7 @@ fn _post_tweet(user_id: String, content: String) -> Result<String, ()> {
     use bindings::golem::rpc::types::Uri;
 
     let api = TweetApi::new(&Uri {
-        value: get_tweet_worker_urn(),
+        value: get_tweet_worker_urn(user_id.clone()),
     });
 
     api.blocking_post_tweet(user_id.as_str(), content.as_str())
@@ -150,7 +166,7 @@ fn get_tweets(user_id: String) -> Result<Vec<String>, ()> {
     use bindings::golem::rpc::types::Uri;
 
     let api = TweetApi::new(&Uri {
-        value: get_tweet_worker_urn(),
+        value: get_tweet_worker_urn(user_id.clone()),
     });
 
     api.blocking_get_user_tweets(user_id.as_str())
@@ -167,7 +183,7 @@ fn _update_timeline(user_id: String, tweet_id: String) -> Result<bool, ()> {
     use bindings::golem::rpc::types::Uri;
 
     let api = TimelineApi::new(&Uri {
-        value: get_timeline_worker_urn(),
+        value: get_timeline_worker_urn(user_id.clone()),
     });
 
     api.blocking_update_timeline(user_id.as_str(), tweet_id.as_str())
@@ -180,7 +196,7 @@ fn get_timeline(user_id: String) -> Result<Vec<String>, ()> {
     use bindings::golem::rpc::types::Uri;
 
     let api = TimelineApi::new(&Uri {
-        value: get_timeline_worker_urn(),
+        value: get_timeline_worker_urn(user_id.clone()),
     });
 
     api.blocking_get_timeline(user_id.as_str())
@@ -401,7 +417,8 @@ impl Guest for Component {
             }
             QueryType::UserTweets => {
                 println!("Query type: UserTweets");
-                compose_tweets(get_tweet_worker_urn(), user_id)
+                let worker_urn = get_tweet_worker_urn(user_id.clone());
+                compose_tweets(worker_urn, user_id)
                     .map(UserTweetsResponse)
                     .unwrap_or_else(|_| Failure("Failed to get tweets".to_string()))
             }
@@ -411,7 +428,8 @@ impl Guest for Component {
             }
             QueryType::UserTimeline => {
                 println!("Query type: UserTimeline");
-                compose_timeline(get_timeline_worker_urn(), user_id)
+                let worker_urn = get_timeline_worker_urn(user_id.clone());
+                compose_timeline(worker_urn, user_id)
                     .map(UserTimelineResponse)
                     .unwrap_or_else(|_| Failure("Failed to get timeline".to_string()))
             }
