@@ -57,24 +57,21 @@ struct Component;
 
 impl Guest for Component {
     // create-user: func(username: string) -> result<string>;
-    fn create_user(username: String) -> Result<String, ()> {
+    fn create_user(user_id: String, username: String) -> Result<String, ()> {
         println!("Creating user with username: {}", username);
-        let exists = STATE.with_borrow(|state| {
-            let user_id = UserId::from(state.users_count + 1);
-            state.users.contains_key(&user_id)
-        });
+        let user_id = UserId(user_id);
+        let exists = STATE.with_borrow(|state| state.users.contains_key(&user_id));
         if exists {
             Err(())
         } else {
             STATE.with_borrow_mut(|state| {
-                let user_id = UserId::from(state.users_count);
                 let user = User::new(user_id.clone(), username);
                 match state.users.insert(user_id.clone(), user) {
-                    Some(_) => Err(()),
                     None => {
                         state.users_count += 1;
                         Ok(user_id.0)
                     }
+                    _ => Err(()),
                 }
             })
         }

@@ -477,12 +477,19 @@ for UserApi {
             rpc: WasmRpc::new(&location),
         }
     }
-    fn blocking_create_user(&self, username: String) -> Result<String, ()> {
+    fn blocking_create_user(
+        &self,
+        user_id: String,
+        username: String,
+    ) -> Result<String, ()> {
         let result = self
             .rpc
             .invoke_and_await(
                 "component:user-management/user-api.{create-user}",
-                &[WitValue::builder().string(&username)],
+                &[
+                    WitValue::builder().string(&user_id),
+                    WitValue::builder().string(&username),
+                ],
             )
             .expect(
                 &format!(
@@ -512,13 +519,17 @@ for UserApi {
     }
     fn create_user(
         &self,
+        user_id: String,
         username: String,
     ) -> crate::bindings::exports::component::user_management_stub::stub_user_management::FutureCreateUserResult {
         let result = self
             .rpc
             .async_invoke_and_await(
                 "component:user-management/user-api.{create-user}",
-                &[WitValue::builder().string(&username)],
+                &[
+                    WitValue::builder().string(&user_id),
+                    WitValue::builder().string(&username),
+                ],
             );
         crate::bindings::exports::component::user_management_stub::stub_user_management::FutureCreateUserResult::new(FutureCreateUserResult {
             future_invoke_result: result,

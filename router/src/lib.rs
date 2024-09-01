@@ -27,6 +27,7 @@ struct Worker {
 }
 
 struct State {
+    next_user_id: u64,
     workers_count: u64,
     workers: BTreeMap<WorkerHash, Worker>,
 }
@@ -34,6 +35,7 @@ struct State {
 impl State {
     fn new() -> Self {
         State {
+            next_user_id: 0,
             workers_count: 0,
             workers: BTreeMap::new(),
         }
@@ -140,6 +142,31 @@ fn get_responsible_worker(key: String) -> Option<Worker> {
         let s = state.borrow();
         s.workers.get(&worker_hash).cloned()
     })
+}
+
+fn register_user(username: String) -> Result<String, ()> {
+    println!("Registering new user with username: {}", username);
+
+    use bindings::component::user_management_stub::stub_user_management::*;
+    use bindings::golem::rpc::types::Uri;
+
+    let available_user_id = STATE.with_borrow(|state| state.next_user_id);
+
+    let api = UserApi::new(&Uri {
+        value: get_user_worker_urn(available_user_id.to_string()),
+    });
+
+    api.blocking_create_user(available_user_id.to_string().as_str(), username.as_str())
+        .and_then(|user_id| {
+            if user_id != available_user_id.to_string() {
+                panic!("Unexpected user id: {}", user_id);
+            } else {
+                STATE.with_borrow_mut(|state| {
+                    state.next_user_id += 1;
+                    Ok(user_id)
+                })
+            }
+        })
 }
 
 fn get_tweets(user_id: String) -> Result<Vec<PostedTweet>, ()> {
@@ -432,6 +459,9 @@ impl Guest for Component {
         use bindings::exports::component::router::router_api::RouterActionResponse::*;
         println!("Routing action of type: {:?} for user: {}", action, user_id);
         match action {
+            Action::Register(username) => register_user(username)
+                .map(|_| Success)
+                .unwrap_or_else(|_| Failure("Failed to register user".to_string())),
             Action::Follow(target_user_id) => orchestrate_follow(user_id, target_user_id)
                 .map(|_| Success)
                 .unwrap_or_else(|_| Failure("Failed to follow".to_string())),

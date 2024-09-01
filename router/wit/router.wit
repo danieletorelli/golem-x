@@ -2,6 +2,7 @@ package component: router;
 
 interface router-api {
   variant action {
+    register(string),
     follow(string),
     unfollow(string),
     post-tweet(string),

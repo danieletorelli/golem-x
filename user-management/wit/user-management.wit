@@ -2,7 +2,7 @@ package component: user-management;
 
 interface user-api {
   // Creates a new user profile
-  create-user: func(username: string) -> result<string>; // user-id
+  create-user: func(user-id: string, username: string) -> result<string>; // user-id
 
   // Updates the user's profile picture using binary data
   update-profile-picture: func(user-id: string, picture-data: list<u8>) -> result<bool>; // success
