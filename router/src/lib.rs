@@ -6,13 +6,27 @@ use blake2::Digest;
 use std::cell::RefCell;
 use std::collections::BTreeMap;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 struct Worker {
     id: String,
 }
 
+struct State {
+    workers_count: u64,
+    workers: BTreeMap<u64, Worker>,
+}
+
+impl State {
+    fn new() -> Self {
+        State {
+            workers_count: 0,
+            workers: BTreeMap::new(),
+        }
+    }
+}
+
 thread_local! {
-    static WORKERS: RefCell<BTreeMap<u64, Worker>> = const { RefCell::new(BTreeMap::new()) };
+    static STATE: RefCell<State> = RefCell::new(State::new());
 }
 
 struct Component;
@@ -30,8 +44,9 @@ fn get_user_worker_urn(user_id: String) -> String {
     let worker_id = match get_responsible_worker(user_id.clone()) {
         Some(worker) => worker.id,
         None => {
-            add_worker(user_id.clone());
-            user_id
+            add_worker(user_id.clone())
+                .unwrap_or_else(|| panic!("Failed to add worker for user with id: {}", user_id))
+                .id
         }
     };
     let component_id =
@@ -49,36 +64,48 @@ fn get_timeline_worker_urn() -> String {
     format!("urn:worker:{component_id}/timeline-manager")
 }
 
-fn add_worker(worker_id: String) -> bool {
-    println!("Adding worker with id: {}", worker_id);
-    WORKERS.with(|workers| {
-        let worker_hash = hash(worker_id.as_str());
-        let mut w = workers.borrow_mut();
-        let worker = Worker { id: worker_id };
-        let added = w.insert(worker_hash, worker);
-        added.is_none()
+fn add_worker(worker_id: String) -> Option<Worker> {
+    let worker_hash = hash(worker_id.as_str());
+    println!("Adding worker with hash: {}", worker_hash);
+    STATE.with(|state| {
+        let mut s = state.borrow_mut();
+        s.workers_count += 1;
+        let worker = Worker {
+            id: s.workers_count.to_string(),
+        };
+        match s.workers.insert(worker_hash, worker.clone()) {
+            Some(_) => None,
+            None => Some(worker),
+        }
     })
     // TODO: Rebalance workers data
 }
 
 #[allow(unused)]
 fn remove_worker(worker_id: String) -> bool {
-    println!("Removing worker with id: {}", worker_id);
-    WORKERS.with(|workers| {
-        let worker_hash = hash(worker_id.as_str());
-        let mut w = workers.borrow_mut();
-        let removed = w.remove(&worker_hash);
-        removed.is_some()
+    let worker_hash = hash(&worker_id);
+    println!("Removing worker with hash: {}", worker_hash);
+    STATE.with(|state| {
+        let mut s = state.borrow_mut();
+        if s.workers.remove(&worker_hash).is_some() {
+            s.workers_count -= 1;
+            true
+        } else {
+            false
+        }
     })
     // TODO: Rebalance workers data
 }
 
 fn get_responsible_worker(key: String) -> Option<Worker> {
-    println!("Getting responsible worker for key: {}", key);
-    WORKERS.with(|workers| {
-        let worker_hash = hash(key.as_str());
-        let s = workers.borrow();
-        s.get(&worker_hash).cloned()
+    let worker_hash = hash(key.as_str());
+    println!(
+        "Getting responsible worker for key: {} (hash: {})",
+        key, worker_hash
+    );
+    STATE.with(|state| {
+        let s = state.borrow();
+        s.workers.get(&worker_hash).cloned()
     })
 }
 
@@ -325,7 +352,7 @@ mod tests {
         std::env::set_var("USER_MANAGER_COMPONENT_ID", component_id.clone());
         assert_eq!(
             get_user_worker_urn(user_id.clone()),
-            format!("urn:worker:{}/user-manager-{}", component_id, user_id)
+            format!("urn:worker:{}/user-manager-1", component_id)
         );
     }
 
@@ -333,16 +360,26 @@ mod tests {
     fn test_get_responsible_worker() {
         let worker_id = "test_worker_id".to_string();
         add_worker(worker_id.clone());
-        assert_eq!(
-            get_responsible_worker(worker_id.clone()).unwrap().id,
-            worker_id
-        );
+        assert_eq!(get_responsible_worker(worker_id.clone()).unwrap().id, "1");
     }
 
     #[test]
     fn test_add_worker() {
         let worker_id = "test_worker_id".to_string();
-        assert_eq!(add_worker(worker_id.clone()), true);
-        assert_eq!(add_worker(worker_id.clone()), false);
+        assert_eq!(
+            add_worker(worker_id.clone()),
+            Some(Worker {
+                id: "1".to_string()
+            })
+        );
+        assert_eq!(add_worker(worker_id), None);
+    }
+
+    #[test]
+    fn test_remove_worker() {
+        let worker_id = "test_worker_id".to_string();
+        add_worker(worker_id.clone());
+        assert!(remove_worker(worker_id.clone()));
+        assert!(!remove_worker(worker_id));
     }
 }
