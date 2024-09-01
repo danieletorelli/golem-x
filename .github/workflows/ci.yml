@@ -52,3 +52,7 @@ jobs:
           cargo make release-build-flow
       - name: Clippy
         run: cargo clippy -- -Dwarnings
+      - name: Save components
+        uses: actions/upload-artifact@v2
+        with:
+          path: target/wasm32-wasip1/release
