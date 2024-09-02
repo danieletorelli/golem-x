@@ -55,6 +55,7 @@ jobs:
       - name: Clippy
         run: cargo clippy -- -Dwarnings
       - name: Save components
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
-          path: target/wasm32-wasip1/release
+          path: target/wasm32-wasip1/release/*.wasm
+          name: components
