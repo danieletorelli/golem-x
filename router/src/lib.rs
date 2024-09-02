@@ -72,8 +72,8 @@ fn get_tweet_worker_urn(user_id: String) -> String {
 fn get_timeline_worker_urn(user_id: String) -> String {
     let worker_id = get_responsible_worker(user_id.clone());
     let component_id =
-        std::env::var("TWEET_MANAGER_COMPONENT_ID").expect("TWEET_MANAGER_COMPONENT_ID not set");
-    format!("urn:worker:{component_id}/tweet-manager-{}", worker_id.0)
+        std::env::var("TIMELINE_MANAGER_COMPONENT_ID").expect("TIMELINE_MANAGER_COMPONENT_ID not set");
+    format!("urn:worker:{component_id}/timeline-manager-{}", worker_id.0)
 }
 
 fn add_worker(worker_id: String) -> Option<Worker> {
