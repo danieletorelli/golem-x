@@ -1,0 +1,55 @@
+
+                        +-----------------------+
+                        |                       |
+                        |    8-bit Hashing      |
+                        |      Function         |
+                        | (Mapping worker URNs) |
+                        |                       |
+                        +-----------+-----------+
+                                    |
+                                    v
+                             +----------------+
+                             |                |
+                             |    Router      |
+                             |  (singleton)   |
+                             +--------+-------+
+                                      |
+                     +----------------+----------------+
+                     |                |                |
+               +-----+----------------+----------------+-----+
+               |                      |                      |
+               |   user_manager-1     |   user_manager-2     |
+               |   tweet_manager-1    |   tweet_manager-2    |
+               |   timeline_manager-1 |   timeline_manager-2 |
+               |                      |                      |
+               +----------------------+----------------------+
+                                      |
+                     +----------------+----------------+
+                     |                |                |
+                     |                |                |
+                     |   user_manager-3                |
+                     |   tweet_manager-3               |
+                     |   timeline_manager-3            |
+                     |                                 |
+                     +---------------------------------+
+
+Hashing function: User ID -> 8-bit Hash -> Worker ID -> Worker URN
+
+Follow:
+- The router calls the user manager of the user id to add the target user id to the following list
+- The router calls the user manager of the target user id to add the user id to the followers list
+- The router calls the timeline manager of the user id to add the target user's tweets to the user's timeline
+Note: It has compensating actions to handle failures in the middle of the process
+
+Unfollow: the reverse of follow
+
+Post tweet:
+- The router calls the tweet manager to post the tweet for the user
+- The router calls the timeline manager to update the timeline of the users following the author of the tweet
+
+Query user tweets:
+- The router calls the tweet manager to get the tweets of the user
+
+Query timeline:
+- The router calls the timeline manager to get the timeline of the user
+- The router calls the tweet manager to expand each tweet in the timeline with its content
