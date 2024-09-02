@@ -596,10 +596,7 @@ mod tests {
     fn test_get_responsible_worker() {
         let worker_id = "test_worker_id".to_string();
         add_worker(worker_id.clone());
-        assert_eq!(
-            get_responsible_worker(worker_id.clone()).unwrap().id,
-            WorkerId::from(1)
-        );
+        assert_eq!(get_responsible_worker(worker_id.clone()), WorkerId::from(1));
     }
 
     #[test]
