@@ -97,7 +97,7 @@ impl Guest for Component {
                 .iter()
                 .map(|tweet| tweet.to_posted_tweet().clone())
                 .collect()),
-            None => Err(()),
+            None => Ok(vec![]),
         })
     }
 

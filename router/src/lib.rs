@@ -399,24 +399,22 @@ fn orchestrate_follow(user_id: String, target_user_id: String) -> Result<bool, (
     match (follow_result, follow_back_result) {
         (Ok(_), Ok(_)) => {
             // Add tweets of the target user to the user's timeline
-            let tweets = get_tweets(target_user_id.clone())?;
-            if tweets.is_empty() {
-                Err(())
-            } else {
-                tweets
-                    .into_iter()
-                    .map(|tweet| {
-                        update_timeline(
-                            user_id.clone(),
-                            tweet.tweet_id,
-                            target_user_id.clone(),
-                            tweet.timestamp,
-                            TimelineAction::Insert,
-                        )
-                    })
-                    .collect::<Result<Vec<_>, _>>()
-                    .map(|_| true)
-            }
+            get_tweets(target_user_id.clone())
+                .and_then(|tweets| {
+                    tweets
+                        .into_iter()
+                        .map(|tweet| {
+                            update_timeline(
+                                user_id.clone(),
+                                tweet.tweet_id,
+                                target_user_id.clone(),
+                                tweet.timestamp,
+                                TimelineAction::Insert,
+                            )
+                        })
+                        .collect::<Result<Vec<_>, _>>()
+                })
+                .map(|_| true)
         }
         // TODO: Log inconsistent state, if happens
         (Err(_), Ok(_)) => {
