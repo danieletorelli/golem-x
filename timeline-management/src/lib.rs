@@ -72,27 +72,25 @@ impl Guest for Component {
             user_id, tweet_id
         );
         let user_id = UserId::from(user_id);
-        STATE.with_borrow_mut(|state| match state.entries.get_mut(&user_id) {
-            Some(entries) => {
-                let tweet_id = TweetId::from(tweet_id);
-                let author_id = UserId::from(author_id);
-                match action {
-                    TimelineAction::Insert => {
-                        entries.push(Entry {
-                            id: tweet_id,
-                            author_id,
-                            timestamp,
-                        });
-                        entries.sort_by_key(|entry| entry.timestamp);
-                        Ok(true)
-                    }
-                    TimelineAction::Remove => {
-                        entries.retain(|entry| entry.id != tweet_id);
-                        Ok(true)
-                    }
+        let tweet_id = TweetId::from(tweet_id);
+        let author_id = UserId::from(author_id);
+        STATE.with_borrow_mut(|state| {
+            let entries = state.entries.entry(user_id).or_default();
+            match action {
+                TimelineAction::Insert => {
+                    entries.push(Entry {
+                        id: tweet_id,
+                        author_id,
+                        timestamp,
+                    });
+                    entries.sort_by_key(|entry| entry.timestamp);
+                    Ok(true)
+                }
+                TimelineAction::Remove => {
+                    entries.retain(|entry| entry.id != tweet_id);
+                    Ok(true)
                 }
             }
-            None => Err(()),
         })
     }
 
@@ -105,7 +103,7 @@ impl Guest for Component {
                 .iter()
                 .map(|entry| entry.to_timeline_tweet())
                 .collect()),
-            None => Err(()),
+            None => Ok(vec![]),
         })
     }
 }
