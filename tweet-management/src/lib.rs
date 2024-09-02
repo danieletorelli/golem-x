@@ -77,14 +77,11 @@ impl Guest for Component {
     fn post_tweet(user_id: String, content: String) -> Result<PostedTweet, ()> {
         println!("User with id: {} posted tweet: {}", user_id, content);
         let user_id = UserId::from(user_id);
-        STATE.with_borrow_mut(|state| match state.tweets.get_mut(&user_id) {
-            Some(tweets) => {
-                let tweet_id = TweetId::from(STATE.with_borrow(|state| state.tweets_count));
-                let tweet = Tweet::new(tweet_id.clone(), content, user_id);
-                tweets.push(tweet.clone());
-                Ok(tweet.to_posted_tweet())
-            }
-            None => Err(()),
+        STATE.with_borrow_mut(|state| {
+            let tweet_id = TweetId::from(state.tweets_count);
+            let tweet = Tweet::new(tweet_id.clone(), content, user_id.clone());
+            state.tweets.entry(user_id).or_default().push(tweet.clone());
+            Ok(tweet.to_posted_tweet())
         })
     }
 
