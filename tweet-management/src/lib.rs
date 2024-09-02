@@ -81,6 +81,7 @@ impl Guest for Component {
             let tweet_id = TweetId::from(state.tweets_count);
             let tweet = Tweet::new(tweet_id.clone(), content, user_id.clone());
             state.tweets.entry(user_id).or_default().push(tweet.clone());
+            state.tweets_count += 1;
             Ok(tweet.to_posted_tweet())
         })
     }
