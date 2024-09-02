@@ -106,7 +106,11 @@ impl Guest for Component {
         let user_id = UserId(user_id);
         let target_user_id = UserId(target_user_id);
         let exists = STATE.with_borrow(|state| {
-            state.users.contains_key(&user_id) && state.users.contains_key(&target_user_id)
+            state
+                .users
+                .get(&user_id)
+                .map(|user| user.following.contains(&target_user_id))
+                .unwrap_or(false)
         });
         if exists {
             Ok(false)
@@ -131,7 +135,11 @@ impl Guest for Component {
         let user_id = UserId(user_id);
         let target_user_id = UserId(target_user_id);
         let exists = STATE.with_borrow(|state| {
-            state.users.contains_key(&user_id) && state.users.contains_key(&target_user_id)
+            state
+                .users
+                .get(&user_id)
+                .map(|user| user.following.contains(&target_user_id))
+                .unwrap_or(false)
         });
         if exists {
             STATE.with_borrow_mut(|state| {
@@ -156,7 +164,11 @@ impl Guest for Component {
         let user_id = UserId(user_id);
         let target_user_id = UserId(target_user_id);
         let exists = STATE.with_borrow(|state| {
-            state.users.contains_key(&user_id) && state.users.contains_key(&target_user_id)
+            state
+                .users
+                .get(&user_id)
+                .map(|user| user.followers.contains(&target_user_id))
+                .unwrap_or(false)
         });
         if exists {
             Ok(false)
@@ -181,7 +193,11 @@ impl Guest for Component {
         let user_id = UserId(user_id);
         let target_user_id = UserId(target_user_id);
         let exists = STATE.with_borrow(|state| {
-            state.users.contains_key(&user_id) && state.users.contains_key(&target_user_id)
+            state
+                .users
+                .get(&user_id)
+                .map(|user| user.followers.contains(&target_user_id))
+                .unwrap_or(false)
         });
         if exists {
             STATE.with_borrow_mut(|state| {
@@ -235,3 +251,138 @@ impl Guest for Component {
 }
 
 bindings::export!(Component with_types_in bindings);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn setup_user(user_id: &'static str, username: &'static str) -> String {
+        Component::create_user(user_id.to_string(), username.to_string()).unwrap()
+    }
+    fn setup_following(user_id: &'static str, target_user_id: &'static str, partial: bool) {
+        Component::follow_user(user_id.to_string(), target_user_id.to_string()).unwrap();
+        if !partial {
+            Component::followed_by_user(target_user_id.to_string(), user_id.to_string()).unwrap();
+        }
+    }
+
+    #[test]
+    fn test_create_user() {
+        let user_id = "1".to_string();
+        let username = "user1".to_string();
+        let result = Component::create_user(user_id.clone(), username.clone());
+        assert_eq!(result, Ok(user_id));
+    }
+
+    #[test]
+    fn test_create_user_already_exists() {
+        let user_id = setup_user("1", "user1");
+        let username = "user1".to_string();
+        let result = Component::create_user(user_id.clone(), username.clone());
+        assert_eq!(result, Err(()));
+    }
+
+    #[test]
+    fn test_follow_user() {
+        let user_id = setup_user("1", "user1");
+        let target_user_id = setup_user("2", "user2");
+        let result = Component::follow_user(user_id.clone(), target_user_id.clone());
+        assert_eq!(result, Ok(true));
+    }
+
+    #[test]
+    fn test_follow_already_exists() {
+        let user_id = setup_user("1", "user1");
+        let target_user_id = setup_user("2", "user2");
+        setup_following("1", "2", true);
+        let result = Component::follow_user(user_id.clone(), target_user_id.clone());
+        assert_eq!(result, Ok(false));
+    }
+
+    #[test]
+    fn test_unfollow_user() {
+        let user_id = setup_user("1", "user1");
+        let target_user_id = setup_user("2", "user2");
+        setup_following("1", "2", true);
+        let result = Component::unfollow_user(user_id.clone(), target_user_id.clone());
+        assert_eq!(result, Ok(true));
+    }
+
+    #[test]
+    fn test_unfollow_not_exists() {
+        let user_id = setup_user("1", "user1");
+        let target_user_id = setup_user("2", "user2");
+        let result = Component::unfollow_user(user_id.clone(), target_user_id.clone());
+        assert_eq!(result, Ok(false));
+    }
+
+    #[test]
+    fn test_followed_by_user() {
+        let user_id = setup_user("1", "user1");
+        let target_user_id = setup_user("2", "user2");
+        let result = Component::followed_by_user(target_user_id.clone(), user_id.clone());
+        assert_eq!(result, Ok(true));
+    }
+
+    #[test]
+    fn test_followed_by_already_exists() {
+        let user_id = setup_user("1", "user1");
+        let target_user_id = setup_user("2", "user2");
+        setup_following("1", "2", false);
+        let result = Component::followed_by_user(target_user_id.clone(), user_id.clone());
+        assert_eq!(result, Ok(false));
+    }
+
+    #[test]
+    fn test_unfollowed_by_user() {
+        let user_id = setup_user("1", "user1");
+        let target_user_id = setup_user("2", "user2");
+        setup_following("1", "2", false);
+        let result = Component::unfollowed_by_user(target_user_id.clone(), user_id.clone());
+        assert_eq!(result, Ok(true));
+    }
+
+    #[test]
+    fn test_unfollowed_by_not_exists() {
+        let user_id = setup_user("1", "user1");
+        let target_user_id = setup_user("2", "user2");
+        let result = Component::unfollowed_by_user(target_user_id.clone(), user_id.clone());
+        assert_eq!(result, Ok(false));
+    }
+
+    #[test]
+    fn test_get_username() {
+        let user_id = setup_user("1", "user1");
+        let result = Component::get_username(user_id.clone());
+        assert_eq!(result, Ok("user1".to_string()));
+    }
+
+    #[test]
+    fn test_get_followers() {
+        setup_user("1", "user1");
+        let target_user_id = setup_user("2", "user2");
+        setup_following("1", "2", false);
+        let result = Component::get_followers(target_user_id.clone());
+        assert_eq!(result, Ok(vec!["1".to_string()]));
+    }
+
+    #[test]
+    fn test_get_following() {
+        let user_id = setup_user("1", "user1");
+        setup_user("2", "user2");
+        setup_following("1", "2", true);
+        let result = Component::get_following(user_id.clone());
+        assert_eq!(result, Ok(vec!["2".to_string()]));
+    }
+
+    #[test]
+    fn test_update_profile_picture() {
+        let user_id = setup_user("1", "user1");
+        let picture_data = vec![1, 2, 3];
+        let result_update =
+            Component::update_profile_picture(user_id.clone(), picture_data.clone());
+        let result_get = Component::get_profile_picture(user_id.clone());
+        assert_eq!(result_update, Ok(true));
+        assert_eq!(result_get, Ok(picture_data));
+    }
+}
