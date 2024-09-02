@@ -234,7 +234,7 @@ fn get_timeline(user_id: String) -> Result<Vec<Tweet>, ()> {
             let mut expanded_tweets: BTreeMap<String, Vec<PostedTweet>> = BTreeMap::new();
             for (author_id, tweets) in tweets_by_author {
                 let author_tweets = get_specific_tweets(
-                    user_id.clone(),
+                    author_id.clone(),
                     tweets
                         .into_iter()
                         .map(|tweet| tweet.tweet_id)
