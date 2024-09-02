@@ -2,20 +2,20 @@ package component: tweet-management;
 
 interface tweet-api {
   record posted-tweet {
-    tweet-id: string,
-    author-id: string,
+    tweet-id: u64,
+    author-id: u64,
     content: string,
     timestamp: s64,
   }
 
   // Post a new tweet
-  post-tweet: func(user-id: string, content: string) -> result<posted-tweet>; // tweet
+  post-tweet: func(user-id: u64, content: string) -> result<posted-tweet>; // tweet
 
   // Get tweets for a specific user
-  get-user-tweets: func(user-id: string) -> result<list<posted-tweet>>; // list of tweets
+  get-user-tweets: func(user-id: u64) -> result<list<posted-tweet>>; // list of tweets
 
   // Get tweets from a list of tweet-ids
-  get-specific-tweets: func(user-id: string, tweet-ids: list<string>) -> result<list<posted-tweet>>; // list of tweets
+  get-specific-tweets: func(user-id: u64, tweet-ids: list<u64>) -> result<list<posted-tweet>>; // list of tweets
 }
 
 world tweet-management {

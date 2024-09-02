@@ -2,34 +2,34 @@ package component: user-management;
 
 interface user-api {
   // Creates a new user profile
-  create-user: func(user-id: string, username: string) -> result<string>; // user-id
+  create-user: func(user-id: u64, username: string) -> result<u64>; // user-id
 
   // Updates the user's profile picture using binary data
-  update-profile-picture: func(user-id: string, picture-data: list<u8>) -> result<bool>; // success
+  update-profile-picture: func(user-id: u64, picture-data: list<u8>) -> result<bool>; // success
 
   // Retrieves the binary data of a user's profile picture
-  get-profile-picture: func(user-id: string) -> result<list<u8>>; // picture-data
+  get-profile-picture: func(user-id: u64) -> result<list<u8>>; // picture-data
 
   // Follow another user
-  follow-user: func(user-id: string, target-user-id: string) -> result<bool>; // success
+  follow-user: func(user-id: u64, target-user-id: u64) -> result<bool>; // success
 
   // Unfollow another user
-  unfollow-user: func(user-id: string, target-user-id: string) -> result<bool>; // success
+  unfollow-user: func(user-id: u64, target-user-id: u64) -> result<bool>; // success
 
   // Is followed by another user
-  followed-by-user: func(user-id: string, target-user-id: string) -> result<bool>; // success
+  followed-by-user: func(user-id: u64, target-user-id: u64) -> result<bool>; // success
 
   // Is unfollowed by another user
-  unfollowed-by-user: func(user-id: string, target-user-id: string) -> result<bool>; // success
+  unfollowed-by-user: func(user-id: u64, target-user-id: u64) -> result<bool>; // success
 
   // Get username
-  get-username: func(user-id: string) -> result<string>; // username
+  get-username: func(user-id: u64) -> result<string>; // username
 
   // Retrieves the list of followers for a user
-  get-followers: func(user-id: string) -> result<list<string>>; // list of user-ids
+  get-followers: func(user-id: u64) -> result<list<u64>>; // list of user-ids
 
   // Retrieves the list of users that a user is following
-  get-following: func(user-id: string) -> result<list<string>>; // list of user-ids
+  get-following: func(user-id: u64) -> result<list<u64>>; // list of user-ids
 }
 
 world user-management {

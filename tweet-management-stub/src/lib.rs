@@ -61,15 +61,13 @@ for FuturePostTweetResult {
                                     tweet_id: record
                                         .field(0usize)
                                         .expect("record field not found")
-                                        .string()
-                                        .expect("string not found")
-                                        .to_string(),
+                                        .u64()
+                                        .expect("u64 not found"),
                                     author_id: record
                                         .field(1usize)
                                         .expect("record field not found")
-                                        .string()
-                                        .expect("string not found")
-                                        .to_string(),
+                                        .u64()
+                                        .expect("u64 not found"),
                                     content: record
                                         .field(2usize)
                                         .expect("record field not found")
@@ -134,15 +132,13 @@ for FutureGetUserTweetsResult {
                                             tweet_id: record
                                                 .field(0usize)
                                                 .expect("record field not found")
-                                                .string()
-                                                .expect("string not found")
-                                                .to_string(),
+                                                .u64()
+                                                .expect("u64 not found"),
                                             author_id: record
                                                 .field(1usize)
                                                 .expect("record field not found")
-                                                .string()
-                                                .expect("string not found")
-                                                .to_string(),
+                                                .u64()
+                                                .expect("u64 not found"),
                                             content: record
                                                 .field(2usize)
                                                 .expect("record field not found")
@@ -209,15 +205,13 @@ for FutureGetSpecificTweetsResult {
                                             tweet_id: record
                                                 .field(0usize)
                                                 .expect("record field not found")
-                                                .string()
-                                                .expect("string not found")
-                                                .to_string(),
+                                                .u64()
+                                                .expect("u64 not found"),
                                             author_id: record
                                                 .field(1usize)
                                                 .expect("record field not found")
-                                                .string()
-                                                .expect("string not found")
-                                                .to_string(),
+                                                .u64()
+                                                .expect("u64 not found"),
                                             content: record
                                                 .field(2usize)
                                                 .expect("record field not found")
@@ -252,7 +246,7 @@ for TweetApi {
     }
     fn blocking_post_tweet(
         &self,
-        user_id: String,
+        user_id: u64,
         content: String,
     ) -> Result<
         crate::bindings::component::tweet_management::tweet_api::PostedTweet,
@@ -262,10 +256,7 @@ for TweetApi {
             .rpc
             .invoke_and_await(
                 "component:tweet-management/tweet-api.{post-tweet}",
-                &[
-                    WitValue::builder().string(&user_id),
-                    WitValue::builder().string(&content),
-                ],
+                &[WitValue::builder().u64(user_id), WitValue::builder().string(&content)],
             )
             .expect(
                 &format!(
@@ -287,15 +278,13 @@ for TweetApi {
                             tweet_id: record
                                 .field(0usize)
                                 .expect("record field not found")
-                                .string()
-                                .expect("string not found")
-                                .to_string(),
+                                .u64()
+                                .expect("u64 not found"),
                             author_id: record
                                 .field(1usize)
                                 .expect("record field not found")
-                                .string()
-                                .expect("string not found")
-                                .to_string(),
+                                .u64()
+                                .expect("u64 not found"),
                             content: record
                                 .field(2usize)
                                 .expect("record field not found")
@@ -316,17 +305,14 @@ for TweetApi {
     }
     fn post_tweet(
         &self,
-        user_id: String,
+        user_id: u64,
         content: String,
     ) -> crate::bindings::exports::component::tweet_management_stub::stub_tweet_management::FuturePostTweetResult {
         let result = self
             .rpc
             .async_invoke_and_await(
                 "component:tweet-management/tweet-api.{post-tweet}",
-                &[
-                    WitValue::builder().string(&user_id),
-                    WitValue::builder().string(&content),
-                ],
+                &[WitValue::builder().u64(user_id), WitValue::builder().string(&content)],
             );
         crate::bindings::exports::component::tweet_management_stub::stub_tweet_management::FuturePostTweetResult::new(FuturePostTweetResult {
             future_invoke_result: result,
@@ -334,7 +320,7 @@ for TweetApi {
     }
     fn blocking_get_user_tweets(
         &self,
-        user_id: String,
+        user_id: u64,
     ) -> Result<
         Vec<crate::bindings::component::tweet_management::tweet_api::PostedTweet>,
         (),
@@ -343,7 +329,7 @@ for TweetApi {
             .rpc
             .invoke_and_await(
                 "component:tweet-management/tweet-api.{get-user-tweets}",
-                &[WitValue::builder().string(&user_id)],
+                &[WitValue::builder().u64(user_id)],
             )
             .expect(
                 &format!(
@@ -368,15 +354,13 @@ for TweetApi {
                                     tweet_id: record
                                         .field(0usize)
                                         .expect("record field not found")
-                                        .string()
-                                        .expect("string not found")
-                                        .to_string(),
+                                        .u64()
+                                        .expect("u64 not found"),
                                     author_id: record
                                         .field(1usize)
                                         .expect("record field not found")
-                                        .string()
-                                        .expect("string not found")
-                                        .to_string(),
+                                        .u64()
+                                        .expect("u64 not found"),
                                     content: record
                                         .field(2usize)
                                         .expect("record field not found")
@@ -399,13 +383,13 @@ for TweetApi {
     }
     fn get_user_tweets(
         &self,
-        user_id: String,
+        user_id: u64,
     ) -> crate::bindings::exports::component::tweet_management_stub::stub_tweet_management::FutureGetUserTweetsResult {
         let result = self
             .rpc
             .async_invoke_and_await(
                 "component:tweet-management/tweet-api.{get-user-tweets}",
-                &[WitValue::builder().string(&user_id)],
+                &[WitValue::builder().u64(user_id)],
             );
         crate::bindings::exports::component::tweet_management_stub::stub_tweet_management::FutureGetUserTweetsResult::new(FutureGetUserTweetsResult {
             future_invoke_result: result,
@@ -413,8 +397,8 @@ for TweetApi {
     }
     fn blocking_get_specific_tweets(
         &self,
-        user_id: String,
-        tweet_ids: Vec<String>,
+        user_id: u64,
+        tweet_ids: Vec<u64>,
     ) -> Result<
         Vec<crate::bindings::component::tweet_management::tweet_api::PostedTweet>,
         (),
@@ -424,11 +408,11 @@ for TweetApi {
             .invoke_and_await(
                 "component:tweet-management/tweet-api.{get-specific-tweets}",
                 &[
-                    WitValue::builder().string(&user_id),
+                    WitValue::builder().u64(user_id),
                     WitValue::builder()
                         .list_fn(
                             &tweet_ids,
-                            |item, item_builder| { item_builder.string(item) },
+                            |item, item_builder| { item_builder.u64(*item) },
                         ),
                 ],
             )
@@ -455,15 +439,13 @@ for TweetApi {
                                     tweet_id: record
                                         .field(0usize)
                                         .expect("record field not found")
-                                        .string()
-                                        .expect("string not found")
-                                        .to_string(),
+                                        .u64()
+                                        .expect("u64 not found"),
                                     author_id: record
                                         .field(1usize)
                                         .expect("record field not found")
-                                        .string()
-                                        .expect("string not found")
-                                        .to_string(),
+                                        .u64()
+                                        .expect("u64 not found"),
                                     content: record
                                         .field(2usize)
                                         .expect("record field not found")
@@ -486,19 +468,19 @@ for TweetApi {
     }
     fn get_specific_tweets(
         &self,
-        user_id: String,
-        tweet_ids: Vec<String>,
+        user_id: u64,
+        tweet_ids: Vec<u64>,
     ) -> crate::bindings::exports::component::tweet_management_stub::stub_tweet_management::FutureGetSpecificTweetsResult {
         let result = self
             .rpc
             .async_invoke_and_await(
                 "component:tweet-management/tweet-api.{get-specific-tweets}",
                 &[
-                    WitValue::builder().string(&user_id),
+                    WitValue::builder().u64(user_id),
                     WitValue::builder()
                         .list_fn(
                             &tweet_ids,
-                            |item, item_builder| { item_builder.string(item) },
+                            |item, item_builder| { item_builder.u64(*item) },
                         ),
                 ],
             );

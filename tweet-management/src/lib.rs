@@ -7,22 +7,10 @@ use std::cell::RefCell;
 use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-struct UserId(String);
-
-impl UserId {
-    fn from(s: String) -> Self {
-        UserId(s)
-    }
-}
+struct UserId(u64);
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-struct TweetId(String);
-
-impl TweetId {
-    fn from(n: u64) -> Self {
-        TweetId(n.to_string())
-    }
-}
+struct TweetId(u64);
 
 #[derive(Debug, Clone)]
 struct Tweet {
@@ -44,8 +32,8 @@ impl Tweet {
 
     fn to_posted_tweet(&self) -> PostedTweet {
         PostedTweet {
-            tweet_id: self.id.0.clone(),
-            author_id: self.author_id.0.clone(),
+            tweet_id: self.id.0,
+            author_id: self.author_id.0,
             content: self.content.clone(),
             timestamp: self.timestamp,
         }
@@ -73,12 +61,11 @@ thread_local! {
 struct Component;
 
 impl Guest for Component {
-    // post-tweet: func(user-id: string, content: string) -> result<posted-tweet>;
-    fn post_tweet(user_id: String, content: String) -> Result<PostedTweet, ()> {
+    fn post_tweet(user_id: u64, content: String) -> Result<PostedTweet, ()> {
         println!("User with id: {} posted tweet: {}", user_id, content);
-        let user_id = UserId::from(user_id);
+        let user_id = UserId(user_id);
         STATE.with_borrow_mut(|state| {
-            let tweet_id = TweetId::from(state.tweets_count);
+            let tweet_id = TweetId(state.tweets_count);
             let tweet = Tweet::new(tweet_id.clone(), content, user_id.clone());
             state.tweets.entry(user_id).or_default().push(tweet.clone());
             state.tweets_count += 1;
@@ -86,10 +73,9 @@ impl Guest for Component {
         })
     }
 
-    //  get-user-tweets: func(user-id: string) -> result<list<posted-tweet>>;
-    fn get_user_tweets(user_id: String) -> Result<Vec<PostedTweet>, ()> {
+    fn get_user_tweets(user_id: u64) -> Result<Vec<PostedTweet>, ()> {
         println!("Getting tweets for user with id: {}", user_id);
-        let user_id = UserId::from(user_id);
+        let user_id = UserId(user_id);
         STATE.with_borrow(|state| match state.tweets.get(&user_id) {
             Some(tweets) => Ok(tweets
                 .iter()
@@ -99,11 +85,7 @@ impl Guest for Component {
         })
     }
 
-    // get-specific-tweets: func(user-id: string, tweet-ids: list<string>) -> result<list<posted-tweet>>;
-    fn get_specific_tweets(
-        user_id: String,
-        tweet_ids: Vec<String>,
-    ) -> Result<Vec<PostedTweet>, ()> {
+    fn get_specific_tweets(user_id: u64, tweet_ids: Vec<u64>) -> Result<Vec<PostedTweet>, ()> {
         println!("Getting specific tweets for user with id: {}", user_id);
         Self::get_user_tweets(user_id).map(|tweets| {
             tweets

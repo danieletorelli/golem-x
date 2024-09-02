@@ -106,15 +106,13 @@ for FutureGetTimelineResult {
                                             tweet_id: record
                                                 .field(0usize)
                                                 .expect("record field not found")
-                                                .string()
-                                                .expect("string not found")
-                                                .to_string(),
+                                                .u64()
+                                                .expect("u64 not found"),
                                             author_id: record
                                                 .field(1usize)
                                                 .expect("record field not found")
-                                                .string()
-                                                .expect("string not found")
-                                                .to_string(),
+                                                .u64()
+                                                .expect("u64 not found"),
                                             timestamp: record
                                                 .field(2usize)
                                                 .expect("record field not found")
@@ -143,9 +141,9 @@ for TimelineApi {
     }
     fn blocking_update_timeline(
         &self,
-        user_id: String,
-        tweet_id: String,
-        author_id: String,
+        user_id: u64,
+        tweet_id: u64,
+        author_id: u64,
         timestamp: i64,
         action: crate::bindings::component::timeline_management::timeline_api::TimelineAction,
     ) -> Result<bool, ()> {
@@ -154,9 +152,9 @@ for TimelineApi {
             .invoke_and_await(
                 "component:timeline-management/timeline-api.{update-timeline}",
                 &[
-                    WitValue::builder().string(&user_id),
-                    WitValue::builder().string(&tweet_id),
-                    WitValue::builder().string(&author_id),
+                    WitValue::builder().u64(user_id),
+                    WitValue::builder().u64(tweet_id),
+                    WitValue::builder().u64(author_id),
                     WitValue::builder().s64(timestamp),
                     WitValue::builder()
                         .enum_value(
@@ -198,9 +196,9 @@ for TimelineApi {
     }
     fn update_timeline(
         &self,
-        user_id: String,
-        tweet_id: String,
-        author_id: String,
+        user_id: u64,
+        tweet_id: u64,
+        author_id: u64,
         timestamp: i64,
         action: crate::bindings::component::timeline_management::timeline_api::TimelineAction,
     ) -> crate::bindings::exports::component::timeline_management_stub::stub_timeline_management::FutureUpdateTimelineResult {
@@ -209,9 +207,9 @@ for TimelineApi {
             .async_invoke_and_await(
                 "component:timeline-management/timeline-api.{update-timeline}",
                 &[
-                    WitValue::builder().string(&user_id),
-                    WitValue::builder().string(&tweet_id),
-                    WitValue::builder().string(&author_id),
+                    WitValue::builder().u64(user_id),
+                    WitValue::builder().u64(tweet_id),
+                    WitValue::builder().u64(author_id),
                     WitValue::builder().s64(timestamp),
                     WitValue::builder()
                         .enum_value(
@@ -232,7 +230,7 @@ for TimelineApi {
     }
     fn blocking_get_timeline(
         &self,
-        user_id: String,
+        user_id: u64,
     ) -> Result<
         Vec<
             crate::bindings::component::timeline_management::timeline_api::TimelineTweet,
@@ -243,7 +241,7 @@ for TimelineApi {
             .rpc
             .invoke_and_await(
                 "component:timeline-management/timeline-api.{get-timeline}",
-                &[WitValue::builder().string(&user_id)],
+                &[WitValue::builder().u64(user_id)],
             )
             .expect(
                 &format!(
@@ -268,15 +266,13 @@ for TimelineApi {
                                     tweet_id: record
                                         .field(0usize)
                                         .expect("record field not found")
-                                        .string()
-                                        .expect("string not found")
-                                        .to_string(),
+                                        .u64()
+                                        .expect("u64 not found"),
                                     author_id: record
                                         .field(1usize)
                                         .expect("record field not found")
-                                        .string()
-                                        .expect("string not found")
-                                        .to_string(),
+                                        .u64()
+                                        .expect("u64 not found"),
                                     timestamp: record
                                         .field(2usize)
                                         .expect("record field not found")
@@ -293,13 +289,13 @@ for TimelineApi {
     }
     fn get_timeline(
         &self,
-        user_id: String,
+        user_id: u64,
     ) -> crate::bindings::exports::component::timeline_management_stub::stub_timeline_management::FutureGetTimelineResult {
         let result = self
             .rpc
             .async_invoke_and_await(
                 "component:timeline-management/timeline-api.{get-timeline}",
-                &[WitValue::builder().string(&user_id)],
+                &[WitValue::builder().u64(user_id)],
             );
         crate::bindings::exports::component::timeline_management_stub::stub_timeline_management::FutureGetTimelineResult::new(FutureGetTimelineResult {
             future_invoke_result: result,

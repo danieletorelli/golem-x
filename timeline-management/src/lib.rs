@@ -6,22 +6,10 @@ use std::cell::RefCell;
 use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-struct UserId(String);
-
-impl UserId {
-    fn from(s: String) -> Self {
-        UserId(s)
-    }
-}
+struct UserId(u64);
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-struct TweetId(String);
-
-impl TweetId {
-    fn from(s: String) -> Self {
-        TweetId(s)
-    }
-}
+struct TweetId(u64);
 
 #[derive(Debug)]
 struct Entry {
@@ -33,8 +21,8 @@ struct Entry {
 impl Entry {
     fn to_timeline_tweet(&self) -> TimelineTweet {
         TimelineTweet {
-            tweet_id: self.id.0.clone(),
-            author_id: self.author_id.0.clone(),
+            tweet_id: self.id.0,
+            author_id: self.author_id.0,
             timestamp: self.timestamp,
         }
     }
@@ -59,11 +47,10 @@ thread_local! {
 struct Component;
 
 impl Guest for Component {
-    //  update-timeline: func(user-id: string, tweet-id: string, timestamp: s64, action: timeline-action) -> result<bool>;
     fn update_timeline(
-        user_id: String,
-        tweet_id: String,
-        author_id: String,
+        user_id: u64,
+        tweet_id: u64,
+        author_id: u64,
         timestamp: i64,
         action: TimelineAction,
     ) -> Result<bool, ()> {
@@ -71,9 +58,9 @@ impl Guest for Component {
             "Updating timeline for user with id: {} with tweet id: {}",
             user_id, tweet_id
         );
-        let user_id = UserId::from(user_id);
-        let tweet_id = TweetId::from(tweet_id);
-        let author_id = UserId::from(author_id);
+        let user_id = UserId(user_id);
+        let tweet_id = TweetId(tweet_id);
+        let author_id = UserId(author_id);
         STATE.with_borrow_mut(|state| {
             let entries = state.entries.entry(user_id).or_default();
             match action {
@@ -94,10 +81,9 @@ impl Guest for Component {
         })
     }
 
-    //  get-timeline: func(user-id: string) -> result<list<timeline-tweet>>;
-    fn get_timeline(user_id: String) -> Result<Vec<TimelineTweet>, ()> {
+    fn get_timeline(user_id: u64) -> Result<Vec<TimelineTweet>, ()> {
         println!("Getting timeline for user with id: {}", user_id);
-        let user_id = UserId::from(user_id);
+        let user_id = UserId(user_id);
         STATE.with_borrow(|state| match state.entries.get(&user_id) {
             Some(entries) => Ok(entries
                 .iter()

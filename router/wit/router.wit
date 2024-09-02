@@ -3,8 +3,8 @@ package component: router;
 interface router-api {
   variant action {
     register(string),
-    follow(string),
-    unfollow(string),
+    follow(u64),
+    unfollow(u64),
     post-tweet(string),
   }
 
@@ -17,26 +17,26 @@ interface router-api {
   }
 
   record user-profile {
-    user-id: string,
+    user-id: u64,
     username: string,
-    followers: list<string>,
-    following: list<string>,
+    followers: list<u64>,
+    following: list<u64>,
   }
 
   record tweet {
-    tweet-id: string,
-    author-id: string,
+    tweet-id: u64,
+    author-id: u64,
     content: string,
     timestamp: s64,
   }
 
   record tweet-data {
-    user-id: string,
+    user-id: u64,
     tweets: list<tweet>,
   }
 
   record timeline-data {
-    author-id: string,
+    author-id: u64,
     tweet: tweet,
   }
 
@@ -47,18 +47,18 @@ interface router-api {
 
   variant router-query-response {
     user-profile-response(user-profile),
-    user-followers-response(list<string>),
-    user-following-response(list<string>),
+    user-followers-response(list<u64>),
+    user-following-response(list<u64>),
     user-tweets-response(tweet-data),
     user-timeline-response(list<timeline-data>),
     failure(string),
   }
 
   // Route actions to appropriate workers based on consistent hashing or other criteria
-  route-action: func(action: action, user-id: string) -> router-action-response; // response
+  route-action: func(action: action, user-id: u64) -> router-action-response; // response
 
   // Route queries to appropriate workers based on consistent hashing or other criteria
-  route-query: func(query-type: query-type, user-id: string) -> router-query-response; // response
+  route-query: func(query-type: query-type, user-id: u64) -> router-query-response; // response
 }
 
 world router {

@@ -60,7 +60,7 @@ for FutureCreateUserResult {
         };
         pollable
     }
-    fn get(&self) -> Option<Result<String, ()>> {
+    fn get(&self) -> Option<Result<u64, ()>> {
         self.future_invoke_result
             .get()
             .map(|result| {
@@ -82,9 +82,8 @@ for FutureCreateUserResult {
                             Ok(
                                 ok_value
                                     .expect("result ok value not found")
-                                    .string()
-                                    .expect("string not found")
-                                    .to_string(),
+                                    .u64()
+                                    .expect("u64 not found"),
                             )
                         }
                         Err(err_value) => Err(()),
@@ -390,7 +389,7 @@ for FutureGetFollowersResult {
         };
         pollable
     }
-    fn get(&self) -> Option<Result<Vec<String>, ()>> {
+    fn get(&self) -> Option<Result<Vec<u64>, ()>> {
         self.future_invoke_result
             .get()
             .map(|result| {
@@ -412,9 +411,7 @@ for FutureGetFollowersResult {
                             Ok(
                                 ok_value
                                     .expect("result ok value not found")
-                                    .list_elements(|item| {
-                                        item.string().expect("string not found").to_string()
-                                    })
+                                    .list_elements(|item| item.u64().expect("u64 not found"))
                                     .expect("list not found"),
                             )
                         }
@@ -433,7 +430,7 @@ for FutureGetFollowingResult {
         };
         pollable
     }
-    fn get(&self) -> Option<Result<Vec<String>, ()>> {
+    fn get(&self) -> Option<Result<Vec<u64>, ()>> {
         self.future_invoke_result
             .get()
             .map(|result| {
@@ -455,9 +452,7 @@ for FutureGetFollowingResult {
                             Ok(
                                 ok_value
                                     .expect("result ok value not found")
-                                    .list_elements(|item| {
-                                        item.string().expect("string not found").to_string()
-                                    })
+                                    .list_elements(|item| item.u64().expect("u64 not found"))
                                     .expect("list not found"),
                             )
                         }
@@ -477,17 +472,13 @@ for UserApi {
             rpc: WasmRpc::new(&location),
         }
     }
-    fn blocking_create_user(
-        &self,
-        user_id: String,
-        username: String,
-    ) -> Result<String, ()> {
+    fn blocking_create_user(&self, user_id: u64, username: String) -> Result<u64, ()> {
         let result = self
             .rpc
             .invoke_and_await(
                 "component:user-management/user-api.{create-user}",
                 &[
-                    WitValue::builder().string(&user_id),
+                    WitValue::builder().u64(user_id),
                     WitValue::builder().string(&username),
                 ],
             )
@@ -508,9 +499,8 @@ for UserApi {
                     Ok(
                         ok_value
                             .expect("result ok value not found")
-                            .string()
-                            .expect("string not found")
-                            .to_string(),
+                            .u64()
+                            .expect("u64 not found"),
                     )
                 }
                 Err(err_value) => Err(()),
@@ -519,7 +509,7 @@ for UserApi {
     }
     fn create_user(
         &self,
-        user_id: String,
+        user_id: u64,
         username: String,
     ) -> crate::bindings::exports::component::user_management_stub::stub_user_management::FutureCreateUserResult {
         let result = self
@@ -527,7 +517,7 @@ for UserApi {
             .async_invoke_and_await(
                 "component:user-management/user-api.{create-user}",
                 &[
-                    WitValue::builder().string(&user_id),
+                    WitValue::builder().u64(user_id),
                     WitValue::builder().string(&username),
                 ],
             );
@@ -537,7 +527,7 @@ for UserApi {
     }
     fn blocking_update_profile_picture(
         &self,
-        user_id: String,
+        user_id: u64,
         picture_data: Vec<u8>,
     ) -> Result<bool, ()> {
         let result = self
@@ -545,7 +535,7 @@ for UserApi {
             .invoke_and_await(
                 "component:user-management/user-api.{update-profile-picture}",
                 &[
-                    WitValue::builder().string(&user_id),
+                    WitValue::builder().u64(user_id),
                     WitValue::builder()
                         .list_fn(
                             &picture_data,
@@ -580,7 +570,7 @@ for UserApi {
     }
     fn update_profile_picture(
         &self,
-        user_id: String,
+        user_id: u64,
         picture_data: Vec<u8>,
     ) -> crate::bindings::exports::component::user_management_stub::stub_user_management::FutureUpdateProfilePictureResult {
         let result = self
@@ -588,7 +578,7 @@ for UserApi {
             .async_invoke_and_await(
                 "component:user-management/user-api.{update-profile-picture}",
                 &[
-                    WitValue::builder().string(&user_id),
+                    WitValue::builder().u64(user_id),
                     WitValue::builder()
                         .list_fn(
                             &picture_data,
@@ -600,12 +590,12 @@ for UserApi {
             future_invoke_result: result,
         })
     }
-    fn blocking_get_profile_picture(&self, user_id: String) -> Result<Vec<u8>, ()> {
+    fn blocking_get_profile_picture(&self, user_id: u64) -> Result<Vec<u8>, ()> {
         let result = self
             .rpc
             .invoke_and_await(
                 "component:user-management/user-api.{get-profile-picture}",
-                &[WitValue::builder().string(&user_id)],
+                &[WitValue::builder().u64(user_id)],
             )
             .expect(
                 &format!(
@@ -634,13 +624,13 @@ for UserApi {
     }
     fn get_profile_picture(
         &self,
-        user_id: String,
+        user_id: u64,
     ) -> crate::bindings::exports::component::user_management_stub::stub_user_management::FutureGetProfilePictureResult {
         let result = self
             .rpc
             .async_invoke_and_await(
                 "component:user-management/user-api.{get-profile-picture}",
-                &[WitValue::builder().string(&user_id)],
+                &[WitValue::builder().u64(user_id)],
             );
         crate::bindings::exports::component::user_management_stub::stub_user_management::FutureGetProfilePictureResult::new(FutureGetProfilePictureResult {
             future_invoke_result: result,
@@ -648,16 +638,16 @@ for UserApi {
     }
     fn blocking_follow_user(
         &self,
-        user_id: String,
-        target_user_id: String,
+        user_id: u64,
+        target_user_id: u64,
     ) -> Result<bool, ()> {
         let result = self
             .rpc
             .invoke_and_await(
                 "component:user-management/user-api.{follow-user}",
                 &[
-                    WitValue::builder().string(&user_id),
-                    WitValue::builder().string(&target_user_id),
+                    WitValue::builder().u64(user_id),
+                    WitValue::builder().u64(target_user_id),
                 ],
             )
             .expect(
@@ -687,16 +677,16 @@ for UserApi {
     }
     fn follow_user(
         &self,
-        user_id: String,
-        target_user_id: String,
+        user_id: u64,
+        target_user_id: u64,
     ) -> crate::bindings::exports::component::user_management_stub::stub_user_management::FutureFollowUserResult {
         let result = self
             .rpc
             .async_invoke_and_await(
                 "component:user-management/user-api.{follow-user}",
                 &[
-                    WitValue::builder().string(&user_id),
-                    WitValue::builder().string(&target_user_id),
+                    WitValue::builder().u64(user_id),
+                    WitValue::builder().u64(target_user_id),
                 ],
             );
         crate::bindings::exports::component::user_management_stub::stub_user_management::FutureFollowUserResult::new(FutureFollowUserResult {
@@ -705,16 +695,16 @@ for UserApi {
     }
     fn blocking_unfollow_user(
         &self,
-        user_id: String,
-        target_user_id: String,
+        user_id: u64,
+        target_user_id: u64,
     ) -> Result<bool, ()> {
         let result = self
             .rpc
             .invoke_and_await(
                 "component:user-management/user-api.{unfollow-user}",
                 &[
-                    WitValue::builder().string(&user_id),
-                    WitValue::builder().string(&target_user_id),
+                    WitValue::builder().u64(user_id),
+                    WitValue::builder().u64(target_user_id),
                 ],
             )
             .expect(
@@ -744,16 +734,16 @@ for UserApi {
     }
     fn unfollow_user(
         &self,
-        user_id: String,
-        target_user_id: String,
+        user_id: u64,
+        target_user_id: u64,
     ) -> crate::bindings::exports::component::user_management_stub::stub_user_management::FutureUnfollowUserResult {
         let result = self
             .rpc
             .async_invoke_and_await(
                 "component:user-management/user-api.{unfollow-user}",
                 &[
-                    WitValue::builder().string(&user_id),
-                    WitValue::builder().string(&target_user_id),
+                    WitValue::builder().u64(user_id),
+                    WitValue::builder().u64(target_user_id),
                 ],
             );
         crate::bindings::exports::component::user_management_stub::stub_user_management::FutureUnfollowUserResult::new(FutureUnfollowUserResult {
@@ -762,16 +752,16 @@ for UserApi {
     }
     fn blocking_followed_by_user(
         &self,
-        user_id: String,
-        target_user_id: String,
+        user_id: u64,
+        target_user_id: u64,
     ) -> Result<bool, ()> {
         let result = self
             .rpc
             .invoke_and_await(
                 "component:user-management/user-api.{followed-by-user}",
                 &[
-                    WitValue::builder().string(&user_id),
-                    WitValue::builder().string(&target_user_id),
+                    WitValue::builder().u64(user_id),
+                    WitValue::builder().u64(target_user_id),
                 ],
             )
             .expect(
@@ -801,16 +791,16 @@ for UserApi {
     }
     fn followed_by_user(
         &self,
-        user_id: String,
-        target_user_id: String,
+        user_id: u64,
+        target_user_id: u64,
     ) -> crate::bindings::exports::component::user_management_stub::stub_user_management::FutureFollowedByUserResult {
         let result = self
             .rpc
             .async_invoke_and_await(
                 "component:user-management/user-api.{followed-by-user}",
                 &[
-                    WitValue::builder().string(&user_id),
-                    WitValue::builder().string(&target_user_id),
+                    WitValue::builder().u64(user_id),
+                    WitValue::builder().u64(target_user_id),
                 ],
             );
         crate::bindings::exports::component::user_management_stub::stub_user_management::FutureFollowedByUserResult::new(FutureFollowedByUserResult {
@@ -819,16 +809,16 @@ for UserApi {
     }
     fn blocking_unfollowed_by_user(
         &self,
-        user_id: String,
-        target_user_id: String,
+        user_id: u64,
+        target_user_id: u64,
     ) -> Result<bool, ()> {
         let result = self
             .rpc
             .invoke_and_await(
                 "component:user-management/user-api.{unfollowed-by-user}",
                 &[
-                    WitValue::builder().string(&user_id),
-                    WitValue::builder().string(&target_user_id),
+                    WitValue::builder().u64(user_id),
+                    WitValue::builder().u64(target_user_id),
                 ],
             )
             .expect(
@@ -858,28 +848,28 @@ for UserApi {
     }
     fn unfollowed_by_user(
         &self,
-        user_id: String,
-        target_user_id: String,
+        user_id: u64,
+        target_user_id: u64,
     ) -> crate::bindings::exports::component::user_management_stub::stub_user_management::FutureUnfollowedByUserResult {
         let result = self
             .rpc
             .async_invoke_and_await(
                 "component:user-management/user-api.{unfollowed-by-user}",
                 &[
-                    WitValue::builder().string(&user_id),
-                    WitValue::builder().string(&target_user_id),
+                    WitValue::builder().u64(user_id),
+                    WitValue::builder().u64(target_user_id),
                 ],
             );
         crate::bindings::exports::component::user_management_stub::stub_user_management::FutureUnfollowedByUserResult::new(FutureUnfollowedByUserResult {
             future_invoke_result: result,
         })
     }
-    fn blocking_get_username(&self, user_id: String) -> Result<String, ()> {
+    fn blocking_get_username(&self, user_id: u64) -> Result<String, ()> {
         let result = self
             .rpc
             .invoke_and_await(
                 "component:user-management/user-api.{get-username}",
-                &[WitValue::builder().string(&user_id)],
+                &[WitValue::builder().u64(user_id)],
             )
             .expect(
                 &format!(
@@ -909,24 +899,24 @@ for UserApi {
     }
     fn get_username(
         &self,
-        user_id: String,
+        user_id: u64,
     ) -> crate::bindings::exports::component::user_management_stub::stub_user_management::FutureGetUsernameResult {
         let result = self
             .rpc
             .async_invoke_and_await(
                 "component:user-management/user-api.{get-username}",
-                &[WitValue::builder().string(&user_id)],
+                &[WitValue::builder().u64(user_id)],
             );
         crate::bindings::exports::component::user_management_stub::stub_user_management::FutureGetUsernameResult::new(FutureGetUsernameResult {
             future_invoke_result: result,
         })
     }
-    fn blocking_get_followers(&self, user_id: String) -> Result<Vec<String>, ()> {
+    fn blocking_get_followers(&self, user_id: u64) -> Result<Vec<u64>, ()> {
         let result = self
             .rpc
             .invoke_and_await(
                 "component:user-management/user-api.{get-followers}",
-                &[WitValue::builder().string(&user_id)],
+                &[WitValue::builder().u64(user_id)],
             )
             .expect(
                 &format!(
@@ -945,9 +935,7 @@ for UserApi {
                     Ok(
                         ok_value
                             .expect("result ok value not found")
-                            .list_elements(|item| {
-                                item.string().expect("string not found").to_string()
-                            })
+                            .list_elements(|item| item.u64().expect("u64 not found"))
                             .expect("list not found"),
                     )
                 }
@@ -957,24 +945,24 @@ for UserApi {
     }
     fn get_followers(
         &self,
-        user_id: String,
+        user_id: u64,
     ) -> crate::bindings::exports::component::user_management_stub::stub_user_management::FutureGetFollowersResult {
         let result = self
             .rpc
             .async_invoke_and_await(
                 "component:user-management/user-api.{get-followers}",
-                &[WitValue::builder().string(&user_id)],
+                &[WitValue::builder().u64(user_id)],
             );
         crate::bindings::exports::component::user_management_stub::stub_user_management::FutureGetFollowersResult::new(FutureGetFollowersResult {
             future_invoke_result: result,
         })
     }
-    fn blocking_get_following(&self, user_id: String) -> Result<Vec<String>, ()> {
+    fn blocking_get_following(&self, user_id: u64) -> Result<Vec<u64>, ()> {
         let result = self
             .rpc
             .invoke_and_await(
                 "component:user-management/user-api.{get-following}",
-                &[WitValue::builder().string(&user_id)],
+                &[WitValue::builder().u64(user_id)],
             )
             .expect(
                 &format!(
@@ -993,9 +981,7 @@ for UserApi {
                     Ok(
                         ok_value
                             .expect("result ok value not found")
-                            .list_elements(|item| {
-                                item.string().expect("string not found").to_string()
-                            })
+                            .list_elements(|item| item.u64().expect("u64 not found"))
                             .expect("list not found"),
                     )
                 }
@@ -1005,13 +991,13 @@ for UserApi {
     }
     fn get_following(
         &self,
-        user_id: String,
+        user_id: u64,
     ) -> crate::bindings::exports::component::user_management_stub::stub_user_management::FutureGetFollowingResult {
         let result = self
             .rpc
             .async_invoke_and_await(
                 "component:user-management/user-api.{get-following}",
-                &[WitValue::builder().string(&user_id)],
+                &[WitValue::builder().u64(user_id)],
             );
         crate::bindings::exports::component::user_management_stub::stub_user_management::FutureGetFollowingResult::new(FutureGetFollowingResult {
             future_invoke_result: result,
