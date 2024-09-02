@@ -58,40 +58,19 @@ fn hash(input: &str) -> WorkerHash {
 }
 
 fn get_user_worker_urn(user_id: String) -> String {
-    let worker_id = match get_responsible_worker(user_id.clone()) {
-        Some(worker) => worker.id,
-        None => {
-            add_worker(user_id.clone())
-                .unwrap_or_else(|| panic!("Failed to add worker for user with id: {}", user_id))
-                .id
-        }
-    };
+    let worker_id = get_responsible_worker(user_id.clone());
     let component_id =
         std::env::var("USER_MANAGER_COMPONENT_ID").expect("USER_MANAGER_COMPONENT_ID not set");
     format!("urn:worker:{component_id}/user-manager-{}", worker_id.0)
 }
 fn get_tweet_worker_urn(user_id: String) -> String {
-    let worker_id = match get_responsible_worker(user_id.clone()) {
-        Some(worker) => worker.id,
-        None => {
-            add_worker(user_id.clone())
-                .unwrap_or_else(|| panic!("Failed to add worker for user with id: {}", user_id))
-                .id
-        }
-    };
+    let worker_id = get_responsible_worker(user_id.clone());
     let component_id =
         std::env::var("TWEET_MANAGER_COMPONENT_ID").expect("TWEET_MANAGER_COMPONENT_ID not set");
     format!("urn:worker:{component_id}/tweet-manager-{}", worker_id.0)
 }
 fn get_timeline_worker_urn(user_id: String) -> String {
-    let worker_id = match get_responsible_worker(user_id.clone()) {
-        Some(worker) => worker.id,
-        None => {
-            add_worker(user_id.clone())
-                .unwrap_or_else(|| panic!("Failed to add worker for user with id: {}", user_id))
-                .id
-        }
-    };
+    let worker_id = get_responsible_worker(user_id.clone());
     let component_id =
         std::env::var("TWEET_MANAGER_COMPONENT_ID").expect("TWEET_MANAGER_COMPONENT_ID not set");
     format!("urn:worker:{component_id}/tweet-manager-{}", worker_id.0)
@@ -132,16 +111,20 @@ fn remove_worker(worker_id: String) -> bool {
     })
 }
 
-fn get_responsible_worker(key: String) -> Option<Worker> {
-    let worker_hash = hash(key.as_str());
+fn get_responsible_worker(user_id: String) -> WorkerId {
+    let worker_hash = hash(user_id.as_str());
     println!(
-        "Getting responsible worker for key: {} (hash: {})",
-        key, worker_hash.0
+        "Getting responsible worker for user: {} (hash: {})",
+        user_id, worker_hash.0
     );
-    STATE.with(|state| {
-        let s = state.borrow();
-        s.workers.get(&worker_hash).cloned()
-    })
+    let existing = STATE.with_borrow(|state| state.workers.get(&worker_hash).cloned());
+    match existing {
+        Some(worker) => worker,
+        None => add_worker(user_id.clone()).unwrap_or_else(|| {
+            panic!("Failed to add worker for user with id: {}", user_id.clone())
+        }),
+    }
+    .id
 }
 
 fn register_user(username: String) -> Result<String, ()> {
