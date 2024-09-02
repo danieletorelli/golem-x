@@ -16,8 +16,3 @@ features = ["bitflags"]
 path = "src/lib.rs"
 crate-type = ["cdylib"]
 required-features = []
-
-[profile.release]
-opt-level = "s"
-lto = true
-strip = true
