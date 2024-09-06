@@ -47,9 +47,7 @@ jobs:
       - name: Generate stubs
         run: cargo make regenerate-stubs
       - name: Compile
-        run: |
-          sed -i 's/wasm32-wasi/wasm32-wasip1/g' Makefile.toml && \
-          cargo make release-build-flow
+        run: cargo make release-build-flow
       - name: Test
         run: cargo test --all
       - name: Clippy

@@ -37,12 +37,12 @@ args = ["clean"]
 command = "cargo-component"
 
 [tasks.compose-release-router]
-args = ["stubgen", "compose", "--source-wasm", "target/wasm32-wasi/release/router.wasm", "--stub-wasm", "target/wasm32-wasi/release/user_management_stub.wasm", "--stub-wasm", "target/wasm32-wasi/release/tweet_management_stub.wasm", "--stub-wasm", "target/wasm32-wasi/release/timeline_management_stub.wasm", "--dest-wasm", "target/wasm32-wasi/release/router_composed.wasm"]
+args = ["stubgen", "compose", "--source-wasm", "target/wasm32-wasip1/release/router.wasm", "--stub-wasm", "target/wasm32-wasip1/release/user_management_stub.wasm", "--stub-wasm", "target/wasm32-wasip1/release/tweet_management_stub.wasm", "--stub-wasm", "target/wasm32-wasip1/release/timeline_management_stub.wasm", "--dest-wasm", "target/wasm32-wasip1/release/router_composed.wasm"]
 command = "golem-cli"
 cwd = "."
 
 [tasks.compose-router]
-args = ["stubgen", "compose", "--source-wasm", "target/wasm32-wasi/debug/router.wasm", "--stub-wasm", "target/wasm32-wasi/debug/user_management_stub.wasm", "--stub-wasm", "target/wasm32-wasi/debug/tweet_management_stub.wasm", "--stub-wasm", "target/wasm32-wasi/debug/timeline_management_stub.wasm", "--dest-wasm", "target/wasm32-wasi/debug/router_composed.wasm"]
+args = ["stubgen", "compose", "--source-wasm", "target/wasm32-wasip1/debug/router.wasm", "--stub-wasm", "target/wasm32-wasip1/debug/user_management_stub.wasm", "--stub-wasm", "target/wasm32-wasip1/debug/tweet_management_stub.wasm", "--stub-wasm", "target/wasm32-wasip1/debug/timeline_management_stub.wasm", "--dest-wasm", "target/wasm32-wasip1/debug/router_composed.wasm"]
 command = "golem-cli"
 cwd = "."
 
