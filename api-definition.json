@@ -1,0 +1,19 @@
+{
+  "id": "golem-x-v1",
+  "draft": true,
+  "version": "0.0.1",
+  "routes": [
+    {
+      "method": "Post",
+      "path": "/v1/users",
+      "binding": {
+        "componentId": {
+          "componentId": "b98fad1b-6ac0-491b-9f15-c5d7cf28dde9",
+          "version": 0
+        },
+        "workerName": "router",
+        "response": "${let username: str = request.body.username; let action = register(username); let result = component:router/router-api.{route-action}(action, 0); let result_status: u64 = match result {  success => 200, failure(_) => 500 }; let result_msg: str = match result {  success => \"Success\", failure(msg) => msg }; let response = {status: result_status, message: result_msg}; {status: result_status, body: response}}"
+      }
+    }
+  ]
+}
