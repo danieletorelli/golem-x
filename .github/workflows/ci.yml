@@ -39,7 +39,7 @@ jobs:
         run: |
           if ! command -v golem-cli &> /dev/null
           then
-            curl -L -o golem-cli https://github.com/golemcloud/golem/releases/latest/download/golem-cli-x86_64-unknown-linux-gnu &&
+            curl -Ssf -L -o golem-cli https://github.com/golemcloud/golem/releases/latest/download/golem-cli-x86_64-unknown-linux-gnu &&
             chmod +x golem-cli &&
             sudo mv golem-cli /usr/local/bin/
           else echo "golem-cli is already installed"
