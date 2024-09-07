@@ -5,8 +5,14 @@ set -euo pipefail
 GOLEM_COMMAND="golem-cli"
 
 function build() {
-  cargo make regenerate-stubs
-  cargo make release-build-flow
+  set +u
+  if [ -n "${SKIP_BUILD}" ]; then
+    echo "Skipping build"
+  else
+    cargo make regenerate-stubs
+    cargo make release-build-flow
+  fi
+  set -u
 }
 
 function update_component() {

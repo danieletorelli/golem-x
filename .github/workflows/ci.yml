@@ -22,7 +22,7 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-is
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -57,3 +57,35 @@ jobs:
         with:
           path: target/wasm32-wasip1/release/*.wasm
           name: components
+
+  functional-tests:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: components
+      - name: Setup artifacts
+        run: |
+          mkdir -p target/wasm32-wasip1/release
+          zip -r components.zip target/wasm32-wasip1/release
+      - run: ls -laR target
+#      - name: Install golem-cli
+#        run: |
+#          if ! command -v golem-cli &> /dev/null
+#          then
+#            curl -Ssf -L -o golem-cli https://github.com/golemcloud/golem/releases/latest/download/golem-cli-x86_64-unknown-linux-gnu &&
+#            chmod +x golem-cli &&
+#            sudo mv golem-cli /usr/local/bin/
+#          else echo "golem-cli is already installed"
+#          fi
+#      - name: Create golem profile
+#        run: golem-cli profile add -s golem --component-url=http://localhost:9881/
+#      - name: Setup containers
+#        run: docker compose --env-file docker.env up -d
+#      - name: Load components
+#        run: SKIP_BUILD=1 ./update_components.sh
+#      - name: Load users
+#        run: |
+#          curl -H "Accept: application/json" -X POST http://golem-x.localhost:9006/v1/users -d '{"username": "Daniele"}'
