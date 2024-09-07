@@ -79,8 +79,13 @@ function update-api() {
     ROUTER_WORKER_VERSION=$(get-worker-version router)
   fi
 
-  sed -i '' "s/\"componentId\": \"[0-9a-fA-F\-]\{36\}\"/\"componentId\": \"${ROUTER_COMPONENT_ID}\"/g" api-definition.json
-  sed -i '' "s/\"version\": [0-9]/\"version\": ${ROUTER_WORKER_VERSION}/g" api-definition.json
+  sed_backup=""
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    sed_backup="''"
+  fi
+
+  sed -i $sed_backup "s/\"componentId\": \"[0-9a-fA-F\-]\{36\}\"/\"componentId\": \"${ROUTER_COMPONENT_ID}\"/g" api-definition.json
+  sed -i $sed_backup "s/\"version\": [0-9]/\"version\": ${ROUTER_WORKER_VERSION}/g" api-definition.json
 
   ${GOLEM_COMMAND} api-definition add api-definition.json
   ${GOLEM_COMMAND} api-deployment deploy --definition=golem-x-v1/0.0.1 --host=localhost:9006 --subdomain=golem-x
