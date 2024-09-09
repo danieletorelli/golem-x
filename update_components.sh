@@ -20,16 +20,6 @@ function update_component() {
   ${GOLEM_COMMAND} component update --non-interactive --component-name=${1?} target/wasm32-wasip1/release/${2?}.wasm
 }
 
-#function update_worker() {
-#  echo "Updating worker: '${2?}' of component '${1?}' to version '${3?}'"
-#  ${GOLEM_COMMAND} worker update --project-name=golem-x --component-name=${1?} --worker-name=${2?} --mode=auto --target-version=${3?}
-#}
-#
-#function update_many_workers() {
-#  echo "Updating all workers of component: '${1?}' to version '${2?}'"
-#  ${GOLEM_COMMAND} worker update-many --project-name=golem-x --component-name=${1?} --mode=auto --target-version=${2?}
-#}
-
 function update_workers() {
   ${GOLEM_COMMAND} component try-update-workers --component-name=${1?}
 }
@@ -54,47 +44,51 @@ function update_timeline_manager() {
   update_workers timeline_manager
 }
 
-function get-component-id() {
-  ${GOLEM_COMMAND} component list --component-name=${1?} | grep "${1?}" | awk -F '|' '{print $2}' | tail -n 1 | tr -dc '[:print:]' | tr -d '[:space:]' | sed 's/\[[0-9;]*[mK]//g' | sed 's/urn:component://'
+function sanitize_output() {
+  tail -n 1 | tr -dc '[:print:]' | tr -d '[:space:]' | sed 's/\[[0-9;]*[mK]//g'
 }
 
-function get-component-version() {
-  ${GOLEM_COMMAND} component list --component-name=${1?} | grep "${1?}" | awk -F '|' '{print $6}' | tail -n 1 | tr -dc '[:print:]' | tr -d '[:space:]' | sed 's/\[[0-9;]*[mK]//g'
+function get_component_id() {
+  ${GOLEM_COMMAND} component list --component-name=${1?} | grep "${1?}" | awk -F '|' '{print $2}' | sanitize_output | sed 's/urn:component://'
 }
 
-function get-worker-version() {
-  ${GOLEM_COMMAND} worker list --component-name=${1?} | (grep "${1?}" || true) | awk -F '|' '{print $5}' | tr -dc '[:print:]' | tr -d '[:space:]' | sed 's/\[[0-9;]*[mK]//g'
+function get_component_version() {
+  ${GOLEM_COMMAND} component list --component-name=${1?} | grep "${1?}" | awk -F '|' '{print $6}' | sanitize_output
 }
 
-function update-api() {
+function get_worker_version() {
+  ${GOLEM_COMMAND} worker list --component-name=${1?} | (grep "${1?}" || true) | awk -F '|' '{print $5}' | sanitize_output
+}
+
+function update_api() {
   ${GOLEM_COMMAND} api-deployment delete golem-x.localhost:9006 || true
   ${GOLEM_COMMAND} api-definition delete --id=golem-x-v1 --version=0.0.1 || true
 
-  ROUTER_COMPONENT_ID=$(get-component-id router)
-  ROUTER_WORKER_VERSION=$(get-worker-version router)
+  ROUTER_COMPONENT_ID=$(get_component_id router)
+  ROUTER_WORKER_VERSION=$(get_worker_version router)
 
   if [ -z "${ROUTER_WORKER_VERSION}" ]; then
-    create-router-worker
-    ROUTER_COMPONENT_ID=$(get-component-id router)
-    ROUTER_WORKER_VERSION=$(get-worker-version router)
+    create_router_worker
+    ROUTER_COMPONENT_ID=$(get_component_id router)
+    ROUTER_WORKER_VERSION=$(get_worker_version router)
   fi
 
-  sed_backup=""
+  SED="sed -i"
   if [[ "$OSTYPE" == "darwin"* ]]; then
-    sed_backup="''"
+    SED="sed -i ''"
   fi
 
-  sed -i $sed_backup "s/\"componentId\": \"[0-9a-fA-F\-]\{36\}\"/\"componentId\": \"${ROUTER_COMPONENT_ID}\"/g" api-definition.json
-  sed -i $sed_backup "s/\"version\": [0-9]/\"version\": ${ROUTER_WORKER_VERSION}/g" api-definition.json
+  ${SED} "s/\"componentId\": \"[0-9a-fA-F\-]\{36\}\"/\"componentId\": \"${ROUTER_COMPONENT_ID}\"/g" api-definition.json
+  ${SED} "s/\"version\": [0-9]/\"version\": ${ROUTER_WORKER_VERSION}/g" api-definition.json
 
   ${GOLEM_COMMAND} api-definition add api-definition.json
   ${GOLEM_COMMAND} api-deployment deploy --definition=golem-x-v1/0.0.1 --host=localhost:9006 --subdomain=golem-x
 }
 
-function create-router-worker {
-  USER_MANAGER_COMPONENT_ID=$(get-component-id user_manager)
-  TWEET_MANAGER_COMPONENT_ID=$(get-component-id tweet_manager)
-  TIMELINE_MANAGER_COMPONENT_ID=$(get-component-id timeline_manager)
+function create_router_worker {
+  USER_MANAGER_COMPONENT_ID=$(get_component_id user_manager)
+  TWEET_MANAGER_COMPONENT_ID=$(get_component_id tweet_manager)
+  TIMELINE_MANAGER_COMPONENT_ID=$(get_component_id timeline_manager)
 
   echo "Creating router worker (user_manager: ${USER_MANAGER_COMPONENT_ID}, tweet_manager: ${TWEET_MANAGER_COMPONENT_ID}, timeline_manager: ${TIMELINE_MANAGER_COMPONENT_ID})"
 
@@ -110,7 +104,7 @@ if [ $# -eq 0 ]; then
   update_user_manager
   update_tweet_manager
   update_timeline_manager
-  update-api
+  update_api
 else
   for arg in "$@"; do
     case $arg in
@@ -130,7 +124,7 @@ else
         update_timeline_manager
         ;;
       api)
-        update-api
+        update_api
         ;;
       *)
         echo "Invalid argument: $arg"

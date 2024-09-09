@@ -83,4 +83,23 @@ jobs:
         run: SKIP_BUILD=1 ./update_components.sh
       - name: Load users
         run: |
-          curl -Ssf -H "Accept: application/json" -X POST http://golem-x.localhost:9006/v1/users -d '{"username": "Daniele"}'
+          source ./api_calls.sh
+
+          USER_0=$(create_user "Daniele")
+          USER_1=$(create_user "John")
+          EXPECTED_SUCCESS='{"message":"Success","status":200}'
+          
+          compare_json "$USER_0" "$EXPECTED_SUCCESS"
+          compare_json "$USER_1" "$EXPECTED_SUCCESS"
+      - name: Get user profiles
+        run: |
+          source ./api_calls.sh
+
+          USER_0=$(get_profile 0)
+          EXPECTED_0='{"status":200,"user":{"user-id":0,"username":"Daniele","followers":[],"following":[]}}'
+
+          USER_1=$(get_profile 1)
+          EXPECTED_1='{"status":200,"user":{"user-id":1,"username":"John","followers":[],"following":[]}}'
+          
+          compare_json "$USER_0" "$EXPECTED_0"
+          compare_json "$USER_1" "$EXPECTED_1"
