@@ -4,11 +4,20 @@ set -euo pipefail
 
 GOLEM_COMMAND="golem-cli"
 
+SED="sed -i"
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  SED="sed -i ''"
+fi
+
 function build() {
   set +u
   if [ -n "${SKIP_BUILD}" ]; then
     echo "Skipping build"
   else
+    if [ ! -f "Makefile.toml" ]; then
+      golem-cli stubgen initialize-workspace --targets user-management --targets tweet-management --targets timeline-management --callers router
+      ${SED} 's/wasm32-wasi/wasm32-wasip1/g' Makefile.toml
+    fi
     cargo make regenerate-stubs
     cargo make release-build-flow
   fi
@@ -71,11 +80,6 @@ function update_api() {
     create_router_worker
     ROUTER_COMPONENT_ID=$(get_component_id router)
     ROUTER_WORKER_VERSION=$(get_worker_version router)
-  fi
-
-  SED="sed -i"
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    SED="sed -i ''"
   fi
 
   ${SED} "s/\"componentId\": \"[0-9a-fA-F\-]\{36\}\"/\"componentId\": \"${ROUTER_COMPONENT_ID}\"/g" api-definition.json
