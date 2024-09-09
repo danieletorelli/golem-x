@@ -4,10 +4,7 @@ set -euo pipefail
 
 GOLEM_COMMAND="golem-cli"
 
-SED="sed -i"
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  SED="sed -i ''"
-fi
+[[ "$OSTYPE" == "darwin"* ]] && SED_FLAGS=(-i '') || SED_FLAGS=(-i)
 
 function build() {
   set +u
@@ -16,7 +13,9 @@ function build() {
   else
     if [ ! -f "Makefile.toml" ]; then
       golem-cli stubgen initialize-workspace --targets user-management --targets tweet-management --targets timeline-management --callers router
-      ${SED} 's/wasm32-wasi/wasm32-wasip1/g' Makefile.toml
+      set -x
+      sed "${SED_FLAGS[@]}" 's/wasm32-wasi/wasm32-wasip1/g' Makefile.toml
+      set +x
     fi
     cargo make regenerate-stubs
     cargo make release-build-flow
@@ -82,8 +81,8 @@ function update_api() {
     ROUTER_WORKER_VERSION=$(get_worker_version router)
   fi
 
-  ${SED} "s/\"componentId\": \"[0-9a-fA-F\-]\{36\}\"/\"componentId\": \"${ROUTER_COMPONENT_ID}\"/g" api-definition.json
-  ${SED} "s/\"version\": [0-9]/\"version\": ${ROUTER_WORKER_VERSION}/g" api-definition.json
+  sed "${SED_FLAGS[@]}" "s/\"componentId\": \"[0-9a-fA-F\-]\{36\}\"/\"componentId\": \"${ROUTER_COMPONENT_ID}\"/g" api-definition.json
+  sed "${SED_FLAGS[@]}" "s/\"version\": [0-9]/\"version\": ${ROUTER_WORKER_VERSION}/g" api-definition.json
 
   ${GOLEM_COMMAND} api-definition add api-definition.json
   ${GOLEM_COMMAND} api-deployment deploy --definition=golem-x-v1/0.0.1 --host=localhost:9006 --subdomain=golem-x
