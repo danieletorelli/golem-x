@@ -65,7 +65,7 @@ function get_component_version() {
 }
 
 function get_worker_version() {
-  ${GOLEM_COMMAND} worker list --component-name=${1?} | (grep "${1?}" || true) | awk -F '|' '{print $5}' | sanitize_output
+  ${GOLEM_COMMAND} worker list --component-name=${1?} | (grep "${1?}" || true) | awk -F '|' '{print $4}' | sanitize_output
 }
 
 function update_api() {
