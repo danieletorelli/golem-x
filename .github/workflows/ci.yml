@@ -103,6 +103,6 @@ jobs:
 
           USER_1=$(get_profile 1)
           EXPECTED_1='{"status":200,"user":{"user-id":1,"username":"John","followers":[],"following":[]}}'
-          
+
           compare_json "$USER_0" "$EXPECTED_0"
           compare_json "$USER_1" "$EXPECTED_1"

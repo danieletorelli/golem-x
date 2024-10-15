@@ -51,7 +51,7 @@ Run
 
         ```bash
         source ./api_calls.sh
- 
+
         create_user "Bob"
         { "message": "Success", "status": 200 }
         ```
@@ -59,7 +59,7 @@ Run
 
         ```bash
         source ./api_calls.sh
- 
+
         get_profile 0
         { "status": 200, "user": { "user-id": 0, "username": "Bob", "followers": [], "following": [] } }
         ```
