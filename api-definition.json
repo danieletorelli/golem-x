@@ -12,7 +12,7 @@
           "version": 0
         },
         "workerName": "\"router\"",
-        "response": "${let username: str = request.body.username; let action = register(username); let result = component:router/router-api.{route-action}(action, 0); let result_status: u64 = match result {  success => 200, failure(_) => 500 }; let result_msg: str = match result {  success => \"Success\", failure(msg) => msg }; let response = {status: result_status, message: result_msg}; {status: result_status, body: response}}"
+        "response": "let username: str = request.body.username; let action = register(username); let result = component:router/router-api.{route-action}(action, 0); let result_status: u64 = match result { success => 200, failure(_) => 500 }; let result_msg: str = match result { success => \"Success\", failure(msg) => msg }; let response = {status: result_status, message: result_msg}; {status: result_status, body: response}"
       }
     },
     {
@@ -24,7 +24,7 @@
           "version": 0
         },
         "workerName": "\"router\"",
-        "response": "${let user_id: u64 = request.path.user_id; let result = component:router/router-api.{route-query}(user-profile, user_id); let result_status: u64 = match result {  user-profile-response(_) => 200, failure(_) => 500 }; let response = match result {  user-profile-response(p) => {status: result_status, user: p}, failure(msg) => {status: result_status, message: msg} }; {status: result_status, body: response}}"
+        "response": "let user_id: u64 = request.path.user_id; let result = component:router/router-api.{route-query}(user-profile, user_id); let result_status: u64 = match result { user-profile-response(_) => 200, failure(_) => 500 }; let response = match result { user-profile-response(p) => {status: result_status, user: p}, failure(msg) => {status: result_status, message: msg} }; {status: result_status, body: response}"
       }
     }
   ]
