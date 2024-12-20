@@ -23,7 +23,7 @@ function clean() {
 
 function update_component() {
   echo "Updating component: '${1?}' with wasm file '${2?}.wasm'"
-  ${GOLEM_COMMAND} component update --non-interactive --component-name=${1?} target/wasm32-wasip1/release/${2?}.wasm
+  ${GOLEM_COMMAND} component update --non-interactive --component-name=${1?} target/golem-components/release/${2?}.wasm
 }
 
 function update_workers() {
@@ -39,7 +39,7 @@ function get_component_id() {
 }
 
 function get_component_version() {
-  ${GOLEM_COMMAND} component list --component-name=${1?} | grep "${1?}" | awk -F '|' '{print $6}' | sanitize_output
+  ${GOLEM_COMMAND} component list --component-name=${1?} | grep "${1?}" | awk -F '|' '{print $4}' | sanitize_output
 }
 
 function get_worker_version() {
@@ -53,7 +53,7 @@ function update_api() {
   COMPONENT_ID=$(get_component_id golem-x)
   COMPONENT_VERSION=$(get_component_version golem-x)
 
-  sed "${SED_FLAGS[@]}" "s/\"componentId\": \"[0-9a-fA-F\-]\{36\}\"/\"componentId\": \"${ROUTER_COMPONENT_ID}\"/g" api-definition.json
+  sed "${SED_FLAGS[@]}" "s/\"componentId\": \"[0-9a-fA-F\-]\{36\}\"/\"componentId\": \"${COMPONENT_ID}\"/g" api-definition.json
   sed "${SED_FLAGS[@]}" "s/\"version\": [0-9]/\"version\": ${COMPONENT_VERSION}/g" api-definition.json
 
   ${GOLEM_COMMAND} api-definition add api-definition.json

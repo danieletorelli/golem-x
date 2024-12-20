@@ -4,27 +4,15 @@
   "version": "0.0.1",
   "routes": [
     {
-      "method": "Post",
-      "path": "/users",
-      "binding": {
-        "componentId": {
-          "componentId": "8f75452a-9f23-4f19-b645-6cbe948dadd2",
-          "version": 0
-        },
-        "workerName": "\"router\"",
-        "response": "let username: str = request.body.username; let action = register(username); let result = component:router/router-api.{route-action}(action, 0); let result_status: u64 = match result { success => 200, failure(_) => 500 }; let result_msg: str = match result { success => \"Success\", failure(msg) => msg }; let response = {status: result_status, message: result_msg}; {status: result_status, body: response}"
-      }
-    },
-    {
       "method": "Get",
-      "path": "/users/{user_id}",
+      "path": "/users/{username}",
       "binding": {
         "componentId": {
-          "componentId": "8f75452a-9f23-4f19-b645-6cbe948dadd2",
+          "componentId": "9c1eb897-15c9-4270-b151-fa997f78eebd",
           "version": 0
         },
-        "workerName": "\"router\"",
-        "response": "let user_id: u64 = request.path.user_id; let result = component:router/router-api.{route-query}(user-profile, user_id); let result_status: u64 = match result { user-profile-response(_) => 200, failure(_) => 500 }; let response = match result { user-profile-response(p) => {status: result_status, user: p}, failure(msg) => {status: result_status, message: msg} }; {status: result_status, body: response}"
+        "workerName": "let username: string = request.path.username; \"user-${username}\"",
+        "response": "let username: string = request.path.username; let followers = component:golem-x-interface/user-api.{get-followers}(); let followings = component:golem-x-interface/user-api.{get-followings}(); let response = {status: 200u8, user: {username: username, followers: followers, followings: followings}}; {status: 200u8, body: response}"
       }
     }
   ]
