@@ -1,0 +1,59 @@
+package component: golem-x;
+
+interface user-api {
+  type username = string;
+
+  // Updates the user's profile picture using binary data
+  update-picture: func(picture-data: list<u8>) -> bool; // success
+
+  // Retrieves the binary data of a user's profile picture
+  get-picture: func() -> list<u8>; // picture-data
+
+  // Follow another user
+  follow: func(user: username) -> bool; // success
+
+  // Unfollow another user
+  unfollow: func(user: username) -> bool; // success
+
+  // Is followed by another user
+  followed-by: func(user: username) -> bool; // success
+
+  // Is unfollowed by another user
+  unfollowed-by: func(user: username) -> bool; // success
+
+  // Retrieves the list of followers
+  get-followers: func() -> list<username>;
+
+  // Retrieves the list of users that a user is following
+  get-followings: func() -> list<username>;
+}
+
+interface tweet-api {
+  record posted-tweet {
+    content: string,
+    timestamp: s64,
+  }
+
+  // Post a new tweet
+  post-tweet: func(content: string) -> posted-tweet; // tweet
+
+  // Get tweets
+  get-tweets: func(limit: u8) -> list<posted-tweet>; // list of tweets
+}
+
+interface timeline-api {
+  record timeline-tweet {
+    content: string,
+    author: string,
+    timestamp: s64,
+  }
+
+  // Get the timeline
+  get-timeline: func() -> list<timeline-tweet>; // list of tweets
+}
+
+world golem-x {
+  export user-api;
+  export tweet-api;
+  export timeline-api;
+}

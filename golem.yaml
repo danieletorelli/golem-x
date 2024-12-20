@@ -1,0 +1,43 @@
+# Schema for IDEA:
+# $schema: https://schema.golem.cloud/app/golem/1.1.0/golem.schema.json
+# Schema for vscode-yaml
+# yaml-language-server: $schema=https://schema.golem.cloud/app/golem/1.1.0/golem.schema.json
+
+tempDir: target/golem-temp
+components:
+  golem-x:
+    profiles:
+      debug:
+        build:
+          - command: cargo component build
+            sources:
+              - src
+              - wit
+            targets:
+              - target/wasm32-wasip1/debug/golem_x.wasm
+        sourceWit: wit
+        generatedWit: wit-generated
+        componentWasm: target/wasm32-wasip1/debug/golem_x.wasm
+        linkedWasm: target/golem-components/debug/golem_x.wasm
+        clean:
+          - src/bindings.rs
+      release:
+        build:
+          - command: cargo component build --release
+            sources:
+              - src
+              - wit
+            targets:
+              - target/wasm32-wasip1/release/golem_x.wasm
+        sourceWit: wit
+        generatedWit: wit-generated
+        componentWasm: target/wasm32-wasip1/release/golem_x.wasm
+        linkedWasm: target/golem-components/release/golem_x.wasm
+        clean:
+          - src/bindings.rs
+    defaultProfile: debug
+dependencies:
+  golem-x:
+    - type: wasm-rpc
+      target: golem-x
+
