@@ -1,17 +1,20 @@
 
-                        +-----------------------+
-                        |                       |
-                        |    8-bit Hashing      |
-                        |      Function         |
-                        | (Mapping worker URNs) |
-                        |                       |
-                        +-----------+-----------+
-                                    |
-                                    v
+
+
+                         +-----------------------+
+                         |                       |
+                         |    8-bit Hashing      |
+                         |      Function         |
+                         | (Mapping worker URNs) |
+                         |                       |
+                         +-----------+-----------+
+                                     |
+                                     v
                              +----------------+
                              |                |
                              |    Router      |
                              |  (singleton)   |
+                             |                |
                              +--------+-------+
                                       |
                      +----------------+----------------+
@@ -25,13 +28,19 @@
                +----------------------+----------------------+
                                       |
                      +----------------+----------------+
-                     |                |                |
-                     |                |                |
-                     |   user_manager-3                |
-                     |   tweet_manager-3               |
-                     |   timeline_manager-3            |
+                     |                                 |
+                     |   user_manager-N                |
+                     |   tweet_manager-N               |
+                     |   timeline_manager-N            |
                      |                                 |
                      +---------------------------------+
+
+
+
+
+
+
+
 
 Hashing function: User ID -> 8-bit Hash -> Worker ID -> Worker URN
 

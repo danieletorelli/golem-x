@@ -11,16 +11,14 @@ function build() {
   if [ -n "${SKIP_BUILD}" ]; then
     echo "Skipping build"
   else
-    if [ ! -f "Makefile.toml" ]; then
-      golem-cli stubgen initialize-workspace --targets user-management --targets tweet-management --targets timeline-management --callers router
-      set -x
-      sed "${SED_FLAGS[@]}" 's/wasm32-wasi/wasm32-wasip1/g' Makefile.toml
-      set +x
-    fi
-    cargo make regenerate-stubs
-    cargo make release-build-flow
+    ${GOLEM_COMMAND} app -b release build
   fi
   set -u
+}
+
+function clean() {
+  ${GOLEM_COMMAND} app clean
+  cargo clean
 }
 
 function update_component() {
@@ -30,26 +28,6 @@ function update_component() {
 
 function update_workers() {
   ${GOLEM_COMMAND} component try-update-workers --component-name=${1?}
-}
-
-function update_router() {
-  update_component router router_composed
-  update_workers router
-}
-
-function update_user_manager() {
-  update_component user_manager user_management
-  update_workers user_manager
-}
-
-function update_tweet_manager() {
-  update_component tweet_manager tweet_management
-  update_workers tweet_manager
-}
-
-function update_timeline_manager() {
-  update_component timeline_manager timeline_management
-  update_workers timeline_manager
 }
 
 function sanitize_output() {
@@ -70,43 +48,22 @@ function get_worker_version() {
 
 function update_api() {
   ${GOLEM_COMMAND} api-deployment delete golem-x.localhost:9006 || true
-  ${GOLEM_COMMAND} api-definition delete --id=golem-x-v1 --version=0.0.1 || true
+  ${GOLEM_COMMAND} api-definition delete --id=golem-x --version=0.0.1 || true
 
-  ROUTER_COMPONENT_ID=$(get_component_id router)
-  ROUTER_WORKER_VERSION=$(get_worker_version router)
-
-  if [ -z "${ROUTER_WORKER_VERSION}" ]; then
-    create_router_worker
-    ROUTER_COMPONENT_ID=$(get_component_id router)
-    ROUTER_WORKER_VERSION=$(get_worker_version router)
-  fi
+  COMPONENT_ID=$(get_component_id golem-x)
+  COMPONENT_VERSION=$(get_component_version golem-x)
 
   sed "${SED_FLAGS[@]}" "s/\"componentId\": \"[0-9a-fA-F\-]\{36\}\"/\"componentId\": \"${ROUTER_COMPONENT_ID}\"/g" api-definition.json
-  sed "${SED_FLAGS[@]}" "s/\"version\": [0-9]/\"version\": ${ROUTER_WORKER_VERSION}/g" api-definition.json
+  sed "${SED_FLAGS[@]}" "s/\"version\": [0-9]/\"version\": ${COMPONENT_VERSION}/g" api-definition.json
 
   ${GOLEM_COMMAND} api-definition add api-definition.json
-  ${GOLEM_COMMAND} api-deployment deploy --definition=golem-x-v1/0.0.1 --host=localhost:9006 --subdomain=golem-x
-}
-
-function create_router_worker {
-  USER_MANAGER_COMPONENT_ID=$(get_component_id user_manager)
-  TWEET_MANAGER_COMPONENT_ID=$(get_component_id tweet_manager)
-  TIMELINE_MANAGER_COMPONENT_ID=$(get_component_id timeline_manager)
-
-  echo "Creating router worker (user_manager: ${USER_MANAGER_COMPONENT_ID}, tweet_manager: ${TWEET_MANAGER_COMPONENT_ID}, timeline_manager: ${TIMELINE_MANAGER_COMPONENT_ID})"
-
-  ${GOLEM_COMMAND} worker add --component-name=router --worker-name=router \
-    --env=USER_MANAGER_COMPONENT_ID=${USER_MANAGER_COMPONENT_ID} \
-    --env=TWEET_MANAGER_COMPONENT_ID=${TWEET_MANAGER_COMPONENT_ID} \
-    --env=TIMELINE_MANAGER_COMPONENT_ID=${TIMELINE_MANAGER_COMPONENT_ID}
+  ${GOLEM_COMMAND} api-deployment deploy --definition=golem-x/0.0.1 --host=localhost:9006 --subdomain=golem-x
 }
 
 if [ $# -eq 0 ]; then
   build
-  update_router
-  update_user_manager
-  update_tweet_manager
-  update_timeline_manager
+  update_component golem-x golem_x
+  update_workers golem-x
   update_api
 else
   for arg in "$@"; do
@@ -114,17 +71,12 @@ else
       build)
         build
         ;;
-      router)
-        update_router
+      clean)
+        clean
         ;;
-      user_manager)
-        update_user_manager
-        ;;
-      tweet_manager)
-        update_tweet_manager
-        ;;
-      timeline_manager)
-        update_timeline_manager
+      update)
+        update_component golem-x golem_x
+        update_workers golem-x
         ;;
       api)
         update_api
