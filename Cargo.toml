@@ -1,6 +1,19 @@
-[workspace]
-members = ["user-management", "tweet-management", "timeline-management", "router"]
-resolver = "2"
+[package]
+name = "golem-x"
+version = "0.2.0"
+edition = "2021"
+
+[package.metadata.component.target]
+path = "wit"
+
+[dependencies]
+chrono = "0.4.39"
+wit-bindgen-rt = { version = "0.36.0", features = ["bitflags"] }
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["cdylib"]
+required-features = []
 
 [profile.release]
 opt-level = "s"
