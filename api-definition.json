@@ -1,11 +1,11 @@
 {
-  "id": "golem-x-v1",
+  "id": "golem-x",
   "draft": true,
   "version": "0.0.1",
   "routes": [
     {
       "method": "Post",
-      "path": "/v1/users",
+      "path": "/users",
       "binding": {
         "componentId": {
           "componentId": "8f75452a-9f23-4f19-b645-6cbe948dadd2",
@@ -17,7 +17,7 @@
     },
     {
       "method": "Get",
-      "path": "/v1/users/{user_id}",
+      "path": "/users/{user_id}",
       "binding": {
         "componentId": {
           "componentId": "8f75452a-9f23-4f19-b645-6cbe948dadd2",
