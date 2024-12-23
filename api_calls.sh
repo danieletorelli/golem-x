@@ -32,9 +32,9 @@ function get_timeline() {
 }
 
 function compare_json() {
-  JQ_REMOVE_TIMESTAMPS='  if .tweets then .tweets |= map(del(.timestamp)) elif .tweet then .tweet |= del(.timestamp) else . end'
-  ACTUAL=$(echo "${1?}" | jq -S ${JQ_REMOVE_TIMESTAMPS})
-  EXPECTED=$(echo "${2?}" | jq -S ${JQ_REMOVE_TIMESTAMPS})
+  JQ_REMOVE_TIMESTAMPS="if .tweets then .tweets |= map(del(.timestamp)) elif .tweet then .tweet |= del(.timestamp) else . end"
+  ACTUAL=$(echo "${1?}" | jq -S "${JQ_REMOVE_TIMESTAMPS}")
+  EXPECTED=$(echo "${2?}" | jq -S "${JQ_REMOVE_TIMESTAMPS}")
 
   diff --color=always -u <(echo $ACTUAL) <(echo $EXPECTED) | (grep -v '^---' | grep -v '^+++' | grep -v '^@@' || true)
 }
