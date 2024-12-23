@@ -1,5 +1,8 @@
 #[allow(warnings)]
 mod bindings;
+mod state;
+mod timeline_cache;
+mod util;
 
 use bindings::exports::component::golem_x_interface::timeline_api;
 use bindings::exports::component::golem_x_interface::timeline_api::TimelineTweet;
@@ -7,35 +10,6 @@ use bindings::exports::component::golem_x_interface::tweet_api;
 use bindings::exports::component::golem_x_interface::tweet_api::PostedTweet;
 use bindings::exports::component::golem_x_interface::user_api;
 use bindings::exports::component::golem_x_interface::user_api::Username;
-use std::cell::RefCell;
-use std::collections::HashSet;
-
-struct State {
-    picture: Vec<u8>,
-    followers: HashSet<Username>,
-    followings: HashSet<Username>,
-    tweets: Vec<PostedTweet>,
-}
-
-impl State {
-    fn new() -> Self {
-        Self {
-            picture: Vec::new(),
-            followers: HashSet::new(),
-            followings: HashSet::new(),
-            tweets: Vec::new(),
-        }
-    }
-}
-
-thread_local! {
-    static STATE: RefCell<State> = RefCell::new(State::new());
-    static USERNAME: Username = std::env::var("GOLEM_WORKER_NAME")
-        .expect("GOLEM_WORKER_NAME not set")
-        .strip_prefix("user-")
-        .expect("Invalid GOLEM_WORKER_NAME")
-        .to_string();
-}
 
 fn get_worker_urn(username: &Username) -> bindings::golem::rpc::types::Uri {
     let component_id = std::env::var("GOLEM_COMPONENT_ID").expect("GOLEM_COMPONENT_ID not set");
@@ -45,16 +19,12 @@ fn get_worker_urn(username: &Username) -> bindings::golem::rpc::types::Uri {
 }
 
 fn check_target_username(user: &Username) -> bool {
-    if *user == get_username() {
+    if *user == state::get_username() {
         eprintln!("Cannot perform actions on yourself");
         false
     } else {
         true
     }
-}
-
-fn get_username() -> Username {
-    USERNAME.with(|u| u.clone())
 }
 
 struct Component;
@@ -64,11 +34,18 @@ impl user_api::Guest for Component {
         use bindings::component::golem_x_stub::stub_golem_x::UserApi;
 
         if check_target_username(&user) {
-            let username = get_username();
+            let username = state::get_username();
             let api = UserApi::new(&get_worker_urn(&user));
             if api.blocking_followed_by(&username) {
                 println!("User '{}' is now following user '{}'", username, user);
-                STATE.with_borrow_mut(|s| s.followings.insert(user))
+                state::update(|s| {
+                    if s.followings.insert(user) {
+                        timeline_cache::invalidate();
+                        true
+                    } else {
+                        false
+                    }
+                })
             } else {
                 false
             }
@@ -79,9 +56,9 @@ impl user_api::Guest for Component {
 
     fn followed_by(user: Username) -> bool {
         if check_target_username(&user) {
-            let username = get_username();
+            let username = state::get_username();
             println!("User '{}' is now followed by user '{}'", username, user);
-            STATE.with_borrow_mut(|s| s.followers.insert(user))
+            state::update(|s| s.followers.insert(user))
         } else {
             false
         }
@@ -89,28 +66,35 @@ impl user_api::Guest for Component {
 
     fn get_followers() -> Vec<Username> {
         println!("Getting followers");
-        STATE.with_borrow(|s| s.followers.iter().cloned().collect())
+        state::update(|s| s.followers.iter().cloned().collect())
     }
 
     fn get_followings() -> Vec<Username> {
         println!("Getting followings");
-        STATE.with_borrow(|s| s.followings.iter().cloned().collect())
+        state::update(|s| s.followings.iter().cloned().collect())
     }
 
     fn get_picture() -> Vec<u8> {
         println!("Getting picture");
-        STATE.with_borrow(|s| s.picture.clone())
+        state::get(|s| s.picture.clone())
     }
 
     fn unfollow(user: Username) -> bool {
         use bindings::component::golem_x_stub::stub_golem_x::UserApi;
 
         if check_target_username(&user) {
-            let username = get_username();
+            let username = state::get_username();
             let api = UserApi::new(&get_worker_urn(&user));
             if api.blocking_unfollowed_by(&user) {
                 println!("User '{}' is no longer following user '{}'", username, user);
-                STATE.with_borrow_mut(|s| s.followings.remove(&user))
+                state::update(|s| {
+                    if s.followings.remove(&user) {
+                        timeline_cache::invalidate();
+                        true
+                    } else {
+                        false
+                    }
+                })
             } else {
                 false
             }
@@ -121,12 +105,12 @@ impl user_api::Guest for Component {
 
     fn unfollowed_by(user: Username) -> bool {
         if check_target_username(&user) {
-            let username = get_username();
+            let username = state::get_username();
             println!(
                 "User '{}' is no longer followed by user '{}'",
                 username, user
             );
-            STATE.with_borrow_mut(|s| s.followers.remove(&user))
+            state::update(|s| s.followers.remove(&user))
         } else {
             false
         }
@@ -134,9 +118,7 @@ impl user_api::Guest for Component {
 
     fn update_picture(picture_data: Vec<u8>) -> bool {
         println!("Updating picture");
-        STATE.with_borrow_mut(|s| {
-            s.picture = picture_data;
-        });
+        state::update(|s| s.picture = picture_data);
         true
     }
 }
@@ -144,8 +126,7 @@ impl user_api::Guest for Component {
 impl tweet_api::Guest for Component {
     fn get_tweets(limit: u8) -> Vec<PostedTweet> {
         println!("Getting tweets");
-        STATE
-            .with_borrow(|s| s.tweets.clone())
+        state::get(|s| s.tweets.clone())
             .into_iter()
             .rev()
             .take(limit as usize)
@@ -154,13 +135,9 @@ impl tweet_api::Guest for Component {
 
     fn post_tweet(content: String) -> PostedTweet {
         println!("Posting tweet: {}", content);
-        let tweet = PostedTweet {
-            content,
-            timestamp: chrono::Utc::now().timestamp(),
-        };
-        STATE.with_borrow_mut(|s| {
-            s.tweets.push(tweet.clone());
-        });
+        let tweet = PostedTweet::from(content);
+        state::update(|s| s.tweets.push(tweet.clone()));
+        timeline_cache::invalidate();
         tweet
     }
 }
@@ -170,22 +147,20 @@ impl timeline_api::Guest for Component {
         use bindings::component::golem_x_stub::stub_golem_x::TweetApi;
 
         println!("Getting timeline");
-        let mut timeline: Vec<TimelineTweet> = STATE
-            .with_borrow(|s| s.followings.clone())
-            .iter()
-            .flat_map(|username| {
-                let api = TweetApi::new(&get_worker_urn(username));
-                api.blocking_get_tweets(50)
-                    .into_iter()
-                    .map(|tweet| TimelineTweet {
-                        author: username.to_string(),
-                        content: tweet.content,
-                        timestamp: tweet.timestamp,
-                    })
-            })
-            .collect();
-        timeline.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
-        timeline
+        timeline_cache::get().unwrap_or_else(|| {
+            let mut timeline: Vec<TimelineTweet> = state::get(|s| s.followings.clone())
+                .iter()
+                .flat_map(|username| {
+                    let api = TweetApi::new(&get_worker_urn(username));
+                    api.blocking_get_tweets(50)
+                        .into_iter()
+                        .map(move |tweet| TimelineTweet::from((tweet, username)))
+                })
+                .collect();
+            timeline.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
+            timeline_cache::update(timeline.clone());
+            timeline
+        })
     }
 }
 
