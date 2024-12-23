@@ -14,6 +14,66 @@
         "workerName": "let username: string = request.path.username; \"user-${username}\"",
         "response": "let username: string = request.path.username; let followers = component:golem-x-interface/user-api.{get-followers}(); let followings = component:golem-x-interface/user-api.{get-followings}(); let response = {status: 200u8, user: {username: username, followers: followers, followings: followings}}; {status: 200u8, body: response}"
       }
+    },
+    {
+      "method": "Post",
+      "path": "/users/{username}/follows",
+      "binding": {
+        "componentId": {
+          "componentId": "9c1eb897-15c9-4270-b151-fa997f78eebd",
+          "version": 0
+        },
+        "workerName": "let username: string = request.path.username; \"user-${username}\"",
+        "response": "let target_user: string = request.body.user; let followed: bool = component:golem-x-interface/user-api.{follow}(target_user); let status: u16 = if followed then 201 else 400; let response = {status: status, followed: followed}; {status: status, body: response}"
+      }
+    },
+    {
+      "method": "Delete",
+      "path": "/users/{username}/follows",
+      "binding": {
+        "componentId": {
+          "componentId": "9c1eb897-15c9-4270-b151-fa997f78eebd",
+          "version": 0
+        },
+        "workerName": "let username: string = request.path.username; \"user-${username}\"",
+        "response": "let target_user: string = request.body.user; let unfollowed: bool = component:golem-x-interface/user-api.{unfollow}(target_user); let status: u16 = if unfollowed then 200 else 400; let response = {status: status, unfollowed: unfollowed}; {status: status, body: response}"
+      }
+    },
+    {
+      "method": "Post",
+      "path": "/users/{username}/tweets",
+      "binding": {
+        "componentId": {
+          "componentId": "9c1eb897-15c9-4270-b151-fa997f78eebd",
+          "version": 0
+        },
+        "workerName": "let username: string = request.path.username; \"user-${username}\"",
+        "response": "let content: string = request.body.content; let tweet = component:golem-x-interface/tweet-api.{post-tweet}(content); let response = {status: 201u8, tweet: tweet}; {status: 201u8, body: response}"
+      }
+    },
+    {
+      "method": "Get",
+      "path": "/users/{username}/tweets",
+      "binding": {
+        "componentId": {
+          "componentId": "9c1eb897-15c9-4270-b151-fa997f78eebd",
+          "version": 0
+        },
+        "workerName": "let username: string = request.path.username; \"user-${username}\"",
+        "response": "let tweets_limit: option<u8> = request.query.limit; let limit: u8 = match tweets_limit {  some(lim) => lim, none => 10 }; let tweets = component:golem-x-interface/tweet-api.{get-tweets}(limit); let response = {status: 200u8, tweets: tweets}; {status: 200u8, body: response}"
+      }
+    },
+    {
+      "method": "Get",
+      "path": "/users/{username}/timeline",
+      "binding": {
+        "componentId": {
+          "componentId": "9c1eb897-15c9-4270-b151-fa997f78eebd",
+          "version": 0
+        },
+        "workerName": "let username: string = request.path.username; \"user-${username}\"",
+        "response": "let tweets = component:golem-x-interface/timeline-api.{get-timeline}(); let response = {status: 200u8, tweets: tweets}; {status: 200u8, body: response}"
+      }
     }
   ]
 }
