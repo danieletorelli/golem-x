@@ -60,7 +60,7 @@
           "version": 0
         },
         "workerName": "let username: string = request.path.username; \"user-${username}\"",
-        "response": "let tweets_limit: option<u8> = request.query.limit; let limit: u8 = match tweets_limit {  some(lim) => lim, none => 10 }; let tweets = component:golem-x-interface/tweet-api.{get-tweets}(limit); let response = {status: 200u8, tweets: tweets}; {status: 200u8, body: response}"
+        "response": "let tweets_limit: option<u8> = request.path.limit; let limit: u8 = match tweets_limit { some(lim) => lim, none => 10 } ; let tweets = component:golem-x-interface/tweet-api.{get-tweets}(limit); let response = {status: 200u8, tweets: tweets}; {status: 200u8, body: response}"
       }
     },
     {
