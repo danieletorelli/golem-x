@@ -41,7 +41,7 @@ function compare_json() {
 
 if [ "${BASH_SOURCE[0]}" == "${0}" ]; then
   if [ $# -lt 1 ]; then
-    echo "Usage: $0 <get_profile> [args...]"
+    echo "Usage: $0 <get_profile,follow,unfollow,tweet,get_tweets,get_timeline> [args...]"
     exit 1
   fi
 
