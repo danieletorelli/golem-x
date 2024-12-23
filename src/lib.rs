@@ -81,12 +81,12 @@ impl user_api::Guest for Component {
         if !check_target_username(&user) {
             return false;
         }
+        let username = state::get_username();
         let api = UserApi::new(&get_worker_urn(&user));
-        if !api.blocking_unfollowed_by(&user) {
+        if !api.blocking_unfollowed_by(&username) {
             return false;
         }
 
-        let username = state::get_username();
         println!("User '{}' is no longer following user '{}'", username, user);
         state::update(|s| {
             if s.followings.remove(&user) {
