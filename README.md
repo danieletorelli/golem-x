@@ -16,17 +16,13 @@ The project requires:
   ```bash
   cargo install cargo-component
   ```
-- [Cargo Make](https://github.com/sagiegurari/cargo-make)
-  ```bash
-  cargo install cargo-make
-  ```
-- [Docker](https://docs.docker.com/get-docker/)
-- [Docker Compose](https://docs.docker.com/compose/install/)
+- [Golem](https://github.com/golemcloud/golem/releases)
+    - You can download the latest binary from the GitHub releases page
 - [Golem CLI](https://github.com/golemcloud/golem/releases)
     - You can download the latest binary from the GitHub releases page
     - Or you can build it:
       ```bash
-      cargo install golem-cloud-cli --features universal
+      cargo install golem-cli
       ```
       Note: Requires protobuf installed on your system
 
@@ -36,33 +32,33 @@ Run
 1. Spin up Golem OSS (optional, to run locally):
 
     ```bash
-    docker compose --env-file docker.env up -d
+    golem start
     ```
 
 2. Building is as simple as:
 
     ```bash
-    ./update_components.sh build
+    golem-cli app -b release build
     ```
-   This script will make sure to build, create the components and the router worker and load the API definition.
+
+   but you can use the provided script to simplify also the loading steps:
+
+    ```bash
+    ./update_components.sh
+    ```
+
+   The script will streamline the process of building and creating the components into Golem,
+   as well as loading and deploying the API definition.
 
 3. Call the API to:
-    1. Create a user:
+    1. Get the user profile:
 
-        ```bash
-        source ./api_calls.sh
+   ```bash
+   source ./api_calls.sh
 
-        create_user "Bob"
-        { "message": "Success", "status": 200 }
-        ```
-    2. Get the user profile:
-
-        ```bash
-        source ./api_calls.sh
-
-        get_profile 0
-        { "status": 200, "user": { "user-id": 0, "username": "Bob", "followers": [], "following": [] } }
-        ```
+   get_profile bob
+   { "status": 200, "user": { "username": "bob", "followers": [], "followings": [] } }
+   ```
 
 Test
 ----
