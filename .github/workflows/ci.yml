@@ -90,6 +90,8 @@ jobs:
           compare_json  "$(tweet john Hello)"         '{"status":201,"tweet":{"content":"Hello","timestamp":0}}'
           compare_json  "$(tweet john Heeey)"         '{"status":201,"tweet":{"content":"Heeey","timestamp":0}}'
           compare_json  "$(get_timeline daniele)"     '{"status":200,"tweets":[{"author":"john","content":"Heeey","timestamp":0},{"author":"john","content":"Hello","timestamp":0}]}'
+          compare_json  "$(tweet john 'Good day')"    '{"status":201,"tweet":{"content":"Good day","timestamp":0}}'
+          compare_json  "$(get_timeline daniele)"     '{"status":200,"tweets":[{"author":"john","content":"Good day","timestamp":0},{"author":"john","content":"Heeey","timestamp":0},{"author":"john","content":"Hello","timestamp":0}]}'
           
           compare_json  "$(follow bob daniele)"       '{"status":201,"followed":true}'
           compare_json  "$(follow bob john)"          '{"status":201,"followed":true}'
