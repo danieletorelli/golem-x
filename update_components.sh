@@ -47,16 +47,23 @@ function get_worker_version() {
 }
 
 function update_api() {
+  AUTH=${1:-none}
   ${GOLEM_COMMAND} api-deployment delete golem-x.localhost:9006 || true
   ${GOLEM_COMMAND} api-definition delete --id=golem-x --version=0.0.1 || true
 
   COMPONENT_ID=$(get_component_id golem-x)
   COMPONENT_VERSION=$(get_component_version golem-x)
 
-  sed "${SED_FLAGS[@]}" -e "s/componentId: [0-9a-fA-F\-]\{36\}/componentId: ${COMPONENT_ID}/g" \
-    -e "s/version: [0-9]\{1,\}$/version: ${COMPONENT_VERSION}/g" api-definition.yaml
+  if [ "${AUTH}" == "auth" ]; then
+    API_DEFINITION="auth-api-definition.yaml"
+  else
+    API_DEFINITION="api-definition.yaml"
+  fi
 
-  ${GOLEM_COMMAND} api-definition add api-definition.yaml --def-format yaml
+  sed "${SED_FLAGS[@]}" -e "s/componentId: [0-9a-fA-F\-]\{36\}/componentId: ${COMPONENT_ID}/g" \
+    -e "s/version: [0-9]\{1,\}$/version: ${COMPONENT_VERSION}/g" ${API_DEFINITION}
+
+  ${GOLEM_COMMAND} api-definition add ${API_DEFINITION} --def-format yaml
   ${GOLEM_COMMAND} api-deployment deploy --definition=golem-x/0.0.1 --host=localhost:9006 --subdomain=golem-x
 }
 
@@ -65,6 +72,19 @@ if [ $# -eq 0 ]; then
   update_component golem-x golem_x
   update_workers golem-x
   update_api
+elif [ $# -eq 1 ]; then
+  case $1 in
+    '--auth')
+      build
+      update_component golem-x golem_x
+      update_workers golem-x
+      update_api auth
+      ;;
+    *)
+      echo "Invalid argument: $1"
+      exit 1
+      ;;
+  esac
 else
   for arg in "$@"; do
     case $arg in
