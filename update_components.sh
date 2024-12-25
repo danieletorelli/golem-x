@@ -53,10 +53,10 @@ function update_api() {
   COMPONENT_ID=$(get_component_id golem-x)
   COMPONENT_VERSION=$(get_component_version golem-x)
 
-  sed "${SED_FLAGS[@]}" "s/\"componentId\": \"[0-9a-fA-F\-]\{36\}\"/\"componentId\": \"${COMPONENT_ID}\"/g" api-definition.json
-  sed "${SED_FLAGS[@]}" "s/\"version\": [0-9]/\"version\": ${COMPONENT_VERSION}/g" api-definition.json
+  sed "${SED_FLAGS[@]}" -e "s/componentId: [0-9a-fA-F\-]\{36\}/componentId: ${COMPONENT_ID}/g" \
+    -e "s/version: [0-9]\{1,\}$/version: ${COMPONENT_VERSION}/g" api-definition.yaml
 
-  ${GOLEM_COMMAND} api-definition add api-definition.json
+  ${GOLEM_COMMAND} api-definition add api-definition.yaml --def-format yaml
   ${GOLEM_COMMAND} api-deployment deploy --definition=golem-x/0.0.1 --host=localhost:9006 --subdomain=golem-x
 }
 
