@@ -18,6 +18,10 @@ routes:
         let followings = component:golem-x-interface/user-api.{get-followings}();
         let response = {status: 200u8, user: {username: username, followers: followers, followings: followings}};
         {status: 200u8, body: response}
+  - method: Options
+    path: /users/{username}
+    binding:
+      bindingType: cors-preflight
   - method: Post
     path: /users/{username}/follows
     binding:
@@ -48,6 +52,10 @@ routes:
         let status: u16 = if unfollowed then 200 else 400;
         let response = {status: status, unfollowed: unfollowed};
         {status: status, body: response}
+  - method: Options
+    path: /users/{username}/follows
+    binding:
+      bindingType: cors-preflight
   - method: Post
     path: /users/{username}/tweets
     binding:
@@ -77,6 +85,10 @@ routes:
         let tweets = component:golem-x-interface/tweet-api.{get-tweets}(limit);
         let response = {status: 200u8, tweets: tweets};
         {status: 200u8, body: response}
+  - method: Options
+    path: /users/{username}/tweets
+    binding:
+      bindingType: cors-preflight
   - method: Get
     path: /users/{username}/timeline
     binding:
@@ -90,3 +102,7 @@ routes:
         let tweets = component:golem-x-interface/timeline-api.{get-timeline}();
         let response = {status: 200u8, tweets: tweets};
         {status: 200u8, body: response}
+  - method: Options
+    path: /users/{username}/timeline
+    binding:
+      bindingType: cors-preflight
