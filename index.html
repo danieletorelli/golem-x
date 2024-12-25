@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitter-like Interface</title>
+</head>
+<body>
+<h1>Twitter-like Backend Interface</h1>
+
+<!-- User Profile Section -->
+<section id="user-profile">
+    <h2>User Profile</h2>
+    <input type="text" id="username" placeholder="Enter username">
+    <button onclick="getUserProfile()">Get Profile</button>
+    <pre id="profile-result"></pre>
+</section>
+
+<!-- Follow/Unfollow Section -->
+<section id="follow-actions">
+    <h2>Follow/Unfollow User</h2>
+    <input type="text" id="follow-username" placeholder="Enter username">
+    <input type="text" id="follow-target" placeholder="Enter username to follow/unfollow">
+    <button onclick="followUser()">Follow</button>
+    <button onclick="unfollowUser()">Unfollow</button>
+    <pre id="follow-result"></pre>
+</section>
+
+<!-- Post Tweet Section -->
+<section id="post-tweet">
+    <h2>Post a Tweet</h2>
+    <input type="text" id="tweet-username" placeholder="Enter username">
+    <textarea id="tweet-content" placeholder="What's happening?"></textarea>
+    <button onclick="postTweet()">Tweet</button>
+    <pre id="tweet-result"></pre>
+</section>
+
+<!-- User Tweets Section -->
+<section id="user-tweets">
+    <h2>User's Tweets</h2>
+    <input type="text" id="tweets-username" placeholder="Enter username">
+    <button onclick="getUserTweets()">Get Tweets</button>
+    <pre id="tweets-result"></pre>
+</section>
+
+<!-- Timeline Section -->
+<section id="timeline">
+    <h2>Timeline</h2>
+    <input type="text" id="timeline-username" placeholder="Enter username">
+    <button onclick="getTimeline()">Get Timeline</button>
+    <pre id="timeline-result"></pre>
+</section>
+
+<script>
+    const apiBaseUrl = 'http://golem-x.localhost:9006';
+
+    async function getUserProfile() {
+        const username = document.getElementById('username').value;
+        const response = await fetch(`${apiBaseUrl}/users/${username}`, {
+            headers: { 'Accept': 'application/json' }
+        });
+        if (response) {
+            const result = await response.json();
+            document.getElementById('profile-result').innerText = JSON.stringify(result, null, 2);
+        }
+    }
+
+    async function followUser() {
+        const username = document.getElementById('follow-username').value;
+        const target = document.getElementById('follow-target').value;
+        const response = await fetch(`${apiBaseUrl}/users/${username}/follows`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ user: target })
+        });
+        if (response) {
+            const result = await response.json();
+            document.getElementById('follow-result').innerText = JSON.stringify(result, null, 2);
+        }
+    }
+
+    async function unfollowUser() {
+        const username = document.getElementById('follow-username').value;
+        const target = document.getElementById('follow-target').value;
+        const response = await fetch(`${apiBaseUrl}/users/${username}/follows`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ user: target })
+        });
+        if (response) {
+            const result = await response.json();
+            document.getElementById('follow-result').innerText = JSON.stringify(result, null, 2);
+        }
+    }
+
+    async function postTweet() {
+        const username = document.getElementById('tweet-username').value;
+        const content = document.getElementById('tweet-content').value;
+        const response = await fetch(`${apiBaseUrl}/users/${username}/tweets`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ content: content })
+        });
+        if (response) {
+            const result = await response.json();
+            document.getElementById('tweet-result').innerText = JSON.stringify(result, null, 2);
+        }
+    }
+
+    async function getUserTweets() {
+        const username = document.getElementById('tweets-username').value;
+        const response = await fetch(`${apiBaseUrl}/users/${username}/tweets`, {
+            headers: { 'Accept': 'application/json' }
+        });
+        if (response) {
+            const result = await response.json();
+            document.getElementById('tweets-result').innerText = JSON.stringify(result, null, 2);
+        }
+    }
+
+    async function getTimeline() {
+        const username = document.getElementById('timeline-username').value;
+        const response = await fetch(`${apiBaseUrl}/users/${username}/timeline`, {
+            headers: { 'Accept': 'application/json' }
+        });
+        if (response) {
+            const result = await response.json();
+            document.getElementById('timeline-result').innerText = JSON.stringify(result, null, 2);
+        }
+    }
+</script>
+</body>
+</html>
