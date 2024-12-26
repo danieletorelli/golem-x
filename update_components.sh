@@ -7,13 +7,7 @@ GOLEM_COMMAND="golem-cli"
 [[ "$OSTYPE" == "darwin"* ]] && SED_FLAGS=(-i '') || SED_FLAGS=(-i)
 
 function build() {
-  set +u
-  if [ -n "${SKIP_BUILD}" ]; then
-    echo "Skipping build"
-  else
-    ${GOLEM_COMMAND} app -b release build
-  fi
-  set -u
+  [[ "${SKIP_BUILD:-}" == "true" ]] || ${GOLEM_COMMAND} app -b release build
 }
 
 function clean() {
