@@ -35,10 +35,10 @@ interface tweet-api {
   }
 
   // Post a new tweet
-  post-tweet: func(content: string) -> posted-tweet; // tweet
+  post-tweet: func(content: string) -> posted-tweet;
 
   // Get tweets
-  get-tweets: func(limit: u8) -> list<posted-tweet>; // list of tweets
+  get-tweets: func(limit: u8) -> list<posted-tweet>;
 }
 
 interface timeline-api {
@@ -49,7 +49,9 @@ interface timeline-api {
   }
 
   // Get the timeline
-  get-timeline: func() -> list<timeline-tweet>; // list of tweets
+  get-timeline: func() -> list<timeline-tweet>;
+
+  invalidate-timeline-cache: func();
 }
 
 world golem-x {

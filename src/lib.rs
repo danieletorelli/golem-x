@@ -129,10 +129,15 @@ impl tweet_api::Guest for Component {
     }
 
     fn post_tweet(content: String) -> tweet_api::PostedTweet {
+        use bindings::component::golem_x_stub::stub_golem_x::TimelineApi;
+
         println!("Posting tweet: {}", content);
         let tweet = tweet_api::PostedTweet::from(content);
         state::update(|s| s.tweets.push(tweet.clone()));
-        timeline_cache::invalidate();
+        for follower in state::get(|s| s.followers.clone()) {
+            let api = TimelineApi::new(&get_worker_urn(&follower));
+            api.blocking_invalidate_timeline_cache();
+        }
         tweet
     }
 }
@@ -157,6 +162,11 @@ impl timeline_api::Guest for Component {
             timeline_cache::update(timeline.clone());
             timeline
         })
+    }
+
+    fn invalidate_timeline_cache() {
+        println!("Invalidating timeline cache");
+        timeline_cache::invalidate();
     }
 }
 
