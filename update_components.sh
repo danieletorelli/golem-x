@@ -72,19 +72,6 @@ if [ $# -eq 0 ]; then
   update_component golem-x golem_x
   update_workers golem-x
   update_api
-elif [ $# -eq 1 ]; then
-  case $1 in
-    '--auth')
-      build
-      update_component golem-x golem_x
-      update_workers golem-x
-      update_api auth
-      ;;
-    *)
-      echo "Invalid argument: $1"
-      exit 1
-      ;;
-  esac
 else
   for arg in "$@"; do
     case $arg in
@@ -101,10 +88,20 @@ else
       api)
         update_api
         ;;
+      '--auth')
+        ;;
       *)
         echo "Invalid argument: $arg"
         exit 1
         ;;
     esac
   done
+  case $1 in
+    '--auth')
+      build
+      update_component golem-x golem_x
+      update_workers golem-x
+      update_api auth
+      ;;
+  esac
 fi
