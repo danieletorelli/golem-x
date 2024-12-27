@@ -7,6 +7,7 @@ mod util;
 use bindings::exports::component::golem_x_interface::timeline_api;
 use bindings::exports::component::golem_x_interface::tweet_api;
 use bindings::exports::component::golem_x_interface::user_api;
+use std::fs;
 
 fn get_worker_urn(username: &user_api::Username) -> bindings::golem::rpc::types::Uri {
     let component_id = std::env::var("GOLEM_COMPONENT_ID").expect("GOLEM_COMPONENT_ID not set");
@@ -73,6 +74,11 @@ impl user_api::Guest for Component {
     fn get_picture() -> Vec<u8> {
         println!("Getting picture");
         state::get(|s| s.picture.clone())
+    }
+
+    fn homepage() -> String {
+        fs::read_to_string("/pages/index.html")
+            .unwrap_or_else(|_| "<html><body><p>Homepage not found</p></body></html>".to_string())
     }
 
     fn unfollow(user: user_api::Username) -> bool {

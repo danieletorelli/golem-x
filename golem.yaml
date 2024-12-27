@@ -21,6 +21,10 @@ components:
         linkedWasm: target/golem-components/debug/golem_x.wasm
         clean:
           - src/bindings.rs
+        files:
+          - sourcePath: index.html
+            targetPath: /pages/index.html
+            permissions: read-only
       release:
         build:
           - command: cargo component build --release
@@ -35,6 +39,10 @@ components:
         linkedWasm: target/golem-components/release/golem_x.wasm
         clean:
           - src/bindings.rs
+        files:
+          - sourcePath: index.html
+            targetPath: /pages/index.html
+            permissions: read-only
     defaultProfile: debug
 dependencies:
   golem-x:

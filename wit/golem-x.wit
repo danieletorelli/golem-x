@@ -3,6 +3,9 @@ package component: golem-x;
 interface user-api {
   type username = string;
 
+  // Displays the homepage for the user
+  homepage: func() -> string;
+
   // Updates the user's profile picture using binary data
   update-picture: func(picture-data: list<u8>) -> bool; // success
 
