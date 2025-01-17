@@ -39,16 +39,14 @@ jobs:
         run: |
           if ! command -v golem-cli &> /dev/null
           then
-            curl -Ssf -L -o golem-cli https://github.com/golemcloud/golem/releases/latest/download/golem-cli-x86_64-unknown-linux-gnu &&
-            chmod +x golem-cli &&
-            sudo mv golem-cli /usr/local/bin/
+            cargo install --git https://github.com/golemcloud/golem golem-cli
           else echo "golem-cli is already installed"
           fi
       - name: Create golem profile
         run: golem-cli profile add -s golem --component-url=http://localhost:9881/
       - name: Compile
         run: |
-          rustup target add wasm32-wasi
+          rustup target add wasm32-wasip1
           ./update_components.sh build
       - name: Test
         run: cargo test --all
@@ -63,9 +61,7 @@ jobs:
         run: |
           if ! command -v golem &> /dev/null
           then
-            curl -Ssf -L -o golem https://github.com/golemcloud/golem/releases/latest/download/golem-x86_64-unknown-linux-gnu &&
-            chmod +x golem &&
-            sudo mv golem /usr/local/bin/
+            cargo install --git https://github.com/golemcloud/golem golem
           else echo "golem is already installed"
           fi
       - name: Run golem
