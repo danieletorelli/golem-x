@@ -1,5 +1,5 @@
-use crate::bindings::exports::component::golem_x_interface::tweet_api::PostedTweet;
-use crate::bindings::exports::component::golem_x_interface::user_api::Username;
+use crate::bindings::exports::component::golem_x_exports::tweet_api::PostedTweet;
+use crate::bindings::exports::component::golem_x_exports::user_api::Username;
 use std::cell::RefCell;
 use std::collections::HashSet;
 
