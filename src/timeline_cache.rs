@@ -1,4 +1,4 @@
-use crate::bindings::exports::component::golem_x_interface::timeline_api::TimelineTweet;
+use crate::bindings::exports::component::golem_x_exports::timeline_api::TimelineTweet;
 use std::cell::RefCell;
 
 thread_local! {

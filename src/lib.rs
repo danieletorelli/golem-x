@@ -4,9 +4,9 @@ mod state;
 mod timeline_cache;
 mod util;
 
-use bindings::exports::component::golem_x_interface::timeline_api;
-use bindings::exports::component::golem_x_interface::tweet_api;
-use bindings::exports::component::golem_x_interface::user_api;
+use bindings::exports::component::golem_x_exports::timeline_api;
+use bindings::exports::component::golem_x_exports::tweet_api;
+use bindings::exports::component::golem_x_exports::user_api;
 
 fn get_worker_urn(username: &user_api::Username) -> bindings::golem::rpc::types::Uri {
     let component_id = std::env::var("GOLEM_COMPONENT_ID").expect("GOLEM_COMPONENT_ID not set");
@@ -28,7 +28,7 @@ struct Component;
 
 impl user_api::Guest for Component {
     fn follow(user: user_api::Username) -> bool {
-        use bindings::component::golem_x_stub::stub_golem_x::UserApi;
+        use bindings::component::golem_x_client::golem_x_client::UserApi;
 
         if !check_target_username(&user) {
             return false;
@@ -76,7 +76,7 @@ impl user_api::Guest for Component {
     }
 
     fn unfollow(user: user_api::Username) -> bool {
-        use bindings::component::golem_x_stub::stub_golem_x::UserApi;
+        use bindings::component::golem_x_client::golem_x_client::UserApi;
 
         if !check_target_username(&user) {
             return false;
@@ -129,7 +129,7 @@ impl tweet_api::Guest for Component {
     }
 
     fn post_tweet(content: String) -> tweet_api::PostedTweet {
-        use bindings::component::golem_x_stub::stub_golem_x::TimelineApi;
+        use bindings::component::golem_x_client::golem_x_client::TimelineApi;
 
         println!("Posting tweet: {}", content);
         let tweet = tweet_api::PostedTweet::from(content);
@@ -144,7 +144,7 @@ impl tweet_api::Guest for Component {
 
 impl timeline_api::Guest for Component {
     fn get_timeline() -> Vec<timeline_api::TimelineTweet> {
-        use bindings::component::golem_x_stub::stub_golem_x::TweetApi;
+        use bindings::component::golem_x_client::golem_x_client::TweetApi;
 
         println!("Getting timeline");
         timeline_cache::get().unwrap_or_else(|| {
