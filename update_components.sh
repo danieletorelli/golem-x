@@ -16,8 +16,8 @@ function clean() {
 }
 
 function update_component() {
-  echo "Updating component: '${1?}' with wasm file '${2?}.wasm'"
-  ${GOLEM_COMMAND} component update --non-interactive --component-name=${1?} target/golem-components/release/${2?}.wasm
+  echo "Updating component: '${1?}'"
+  ${GOLEM_COMMAND} component update -b release -y --component-name=${1?}
 }
 
 function update_workers() {
@@ -63,7 +63,7 @@ function update_api() {
 
 if [ $# -eq 0 ]; then
   build
-  update_component golem-x golem_x
+  update_component golem-x
   update_workers golem-x
   update_api
 else
@@ -76,7 +76,7 @@ else
         clean
         ;;
       update)
-        update_component golem-x golem_x
+        update_component golem-x
         update_workers golem-x
         ;;
       api)
@@ -93,7 +93,7 @@ else
   case $1 in
     '--auth')
       build
-      update_component golem-x golem_x
+      update_component golem-x
       update_workers golem-x
       update_api auth
       ;;

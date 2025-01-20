@@ -47,9 +47,7 @@ jobs:
       - name: Create golem profile
         run: golem-cli profile add -s golem --component-url=http://localhost:9881/
       - name: Compile
-        run: |
-          rustup target add wasm32-wasip1
-          ./update_components.sh build
+        run: ./update_components.sh build
       - name: Test
         run: cargo test --all
       - name: Clippy
