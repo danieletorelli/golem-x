@@ -5,6 +5,12 @@ on:
     tags: [ 'v*.*.*' ]
     branches: [ '**' ]
   workflow_dispatch:
+    inputs:
+      debugmode:
+        description: 'Run tests in debug mode'
+        type: boolean
+        required: true
+        default: false
 
 env:
   CARGO_TERM_COLOR: always
@@ -105,4 +111,4 @@ jobs:
       - name: Create golem profile
         run: golem-cli profile add -s golem --component-url=http://localhost:9881/
       - name: Functional tests
-        run: ./run_tests.sh
+        run: DEBUG=${{ github.event.inputs.debugmode }} ./run_tests.sh
