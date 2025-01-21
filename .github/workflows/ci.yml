@@ -10,8 +10,41 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build-and-test:
+  setup-environment:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/bin/golem-cli
+            /usr/local/bin/golem
+          key: ${{ runner.os }}-golem-tools
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+      - name: Install protobuf
+        uses: arduino/setup-protoc@v3
+      - name: Install golem-cli
+        run: |
+          if ! command -v golem-cli &> /dev/null
+          then
+            cargo install --git https://github.com/golemcloud/golem golem-cli &&
+            sudo mv ~/.cargo/bin/golem-cli /usr/local/bin
+          else echo "golem-cli is already installed"
+          fi
+      - name: Install golem
+        run: |
+          if ! command -v golem &> /dev/null
+          then
+            cargo install --git https://github.com/golemcloud/golem golem &&
+            sudo mv ~/.cargo/bin/golem /usr/local/bin
+          else echo "golem is already installed"
+          fi
+
+  build:
+    runs-on: ubuntu-latest
+    needs: setup-environment
     steps:
       - uses: actions/checkout@v4
       - uses: actions/cache@v4
@@ -22,28 +55,21 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - uses: actions/cache@v4
+        with:
+          path: |
             /usr/local/bin/golem-cli
             /usr/local/bin/golem
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}-is
+          key: ${{ runner.os }}-golem-tools
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
       - name: Install cargo-binstall
-        uses: cargo-bins/cargo-binstall@main
+        uses: cargo-bins/cargo-binstall@v1.10.22
       - name: Install cargo-component
         run: cargo binstall --no-confirm cargo-component || true
-      - name: Install protobuf
-        uses: arduino/setup-protoc@v3
-      - name: Install golem-cli
-        run: |
-          if ! command -v golem-cli &> /dev/null
-          then
-            curl -Ssf -L -o golem-cli https://github.com/golemcloud/golem/releases/latest/download/golem-cli-x86_64-unknown-linux-gnu &&
-            chmod +x golem-cli &&
-            sudo mv golem-cli /usr/local/bin/
-          else echo "golem-cli is already installed"
-          fi
       - name: Create golem profile
         run: golem-cli profile add -s golem --component-url=http://localhost:9881/
       - name: Compile
@@ -57,18 +83,26 @@ jobs:
         with:
           path: target/golem-components/release/*.wasm
           name: components
-      - name: Install golem
-        run: |
-          if ! command -v golem &> /dev/null
-          then
-            curl -Ssf -L -o golem https://github.com/golemcloud/golem/releases/latest/download/golem-x86_64-unknown-linux-gnu &&
-            chmod +x golem &&
-            sudo mv golem /usr/local/bin/
-          else echo "golem is already installed"
-          fi
+
+  functional-tests:
+    runs-on: ubuntu-latest
+    needs: [ setup-environment, build ]
+    steps:
+      - uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/bin/golem-cli
+            /usr/local/bin/golem
+          key: ${{ runner.os }}-golem-tools
+      - uses: actions/checkout@v4
+      - name: Download components
+        uses: actions/download-artifact@v4
+        with:
+          name: components
+          path: target/golem-components/release
       - name: Run golem
         run: golem start &
-      - name: Load components
-        run: SKIP_BUILD=true ./update_components.sh
+      - name: Create golem profile
+        run: golem-cli profile add -s golem --component-url=http://localhost:9881/
       - name: Functional tests
         run: ./run_tests.sh
