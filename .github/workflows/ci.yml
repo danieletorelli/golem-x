@@ -56,6 +56,7 @@ jobs:
             echo "golem-cli installed from latest git release"
           else echo "golem-cli is already installed"
           fi
+          echo "Golem CLI version: $(golem-cli --version | cut -d ' ' -f 2)"
       - name: Install golem
         run: |
           if [[ "${{ github.event.inputs.golemtools }}" == "source" ]]
@@ -71,6 +72,7 @@ jobs:
             echo "golem installed from latest git release"
           else echo "golem is already installed"
           fi
+          echo "Golem version: $(golem --version | cut -d ' ' -f 2)"
 
   build:
     runs-on: ubuntu-latest
