@@ -53,7 +53,10 @@ jobs:
             sudo mv golem-cli /usr/local/bin/ &&
             echo "golem-cli installed from latest git release"
           fi
-          echo "Golem CLI version: $(golem-cli --version | cut -d ' ' -f 2)"
+          if command -v golem-cli &> /dev/null
+          then echo "Golem CLI version: $(golem-cli --version | cut -d ' ' -f 2)"
+          else exit 1
+          fi
       - name: Install golem
         if: steps.golem-tools-cache.outputs.cache-hit != 'true'
         run: |
@@ -68,7 +71,10 @@ jobs:
             sudo mv golem /usr/local/bin/ &&
             echo "golem installed from latest git release"
           fi
-          echo "Golem version: $(golem --version | cut -d ' ' -f 2)"
+          if command -v golem &> /dev/null
+          then echo "Golem version: $(golem --version | cut -d ' ' -f 2)"
+          else exit 1
+          fi
 
   build:
     runs-on: ubuntu-latest
