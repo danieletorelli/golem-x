@@ -10,32 +10,25 @@ function get_profile() {
 
 function follow() {
   TARGET="${2?}"
-  curl -Ss -H "Accept: application/json" -X POST "${GOLEM_API_HOST}/users/${1?}/follows" -d "{\"user\":\"${TARGET}\"}"
+  curl -Ss -H "Accept: application/json" -X POST "${GOLEM_API_HOST}/users/${1?}/follows" -d "{\"user\":\"${TARGET}\"}" || print_oplog "user-${1?}"
 }
 
 function unfollow() {
   TARGET="${2?}"
-  curl -Ss -H "Accept: application/json" -X DELETE "${GOLEM_API_HOST}/users/${1?}/follows" -d "{\"user\":\"${TARGET}\"}"
+  curl -Ss -H "Accept: application/json" -X DELETE "${GOLEM_API_HOST}/users/${1?}/follows" -d "{\"user\":\"${TARGET}\"}" || print_oplog "user-${1?}"
 }
 
 function tweet() {
   CONTENT="${2?}"
-  curl -Ss -H "Accept: application/json" -X POST "${GOLEM_API_HOST}/users/${1?}/tweets" -d "{\"content\":\"${CONTENT}\"}"
+  curl -Ss -H "Accept: application/json" -X POST "${GOLEM_API_HOST}/users/${1?}/tweets" -d "{\"content\":\"${CONTENT}\"}" || print_oplog "user-${1?}"
 }
 
 function get_tweets() {
-  curl -Ss -H "Accept: application/json" "${GOLEM_API_HOST}/users/${1?}/tweets"
+  curl -Ss -H "Accept: application/json" "${GOLEM_API_HOST}/users/${1?}/tweets" || print_oplog "user-${1?}"
 }
 
 function get_timeline() {
-  curl -Ss -H "Accept: application/json" "${GOLEM_API_HOST}/users/${1?}/timeline"
-}
-
-function compare_json() {
-  ACTUAL=$(echo "${1?}" | jq -c -f filter.jq)
-  EXPECTED=$(echo "${2?}" | jq -c -f filter.jq)
-
-  diff --color=always -u <(echo $ACTUAL) <(echo $EXPECTED) | (grep -v '^---' | grep -v '^+++' | grep -v '^@@' || true)
+  curl -Ss -H "Accept: application/json" "${GOLEM_API_HOST}/users/${1?}/timeline" || print_oplog "user-${1?}"
 }
 
 if [ "${BASH_SOURCE[0]}" == "${0}" ]; then
