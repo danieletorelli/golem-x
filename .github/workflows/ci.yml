@@ -6,14 +6,11 @@ on:
     branches: [ '**' ]
   workflow_dispatch:
     inputs:
-      golemtools:
-        description: 'Install Golem tools from'
-        type: choice
+      buildtools:
+        description: 'Build Golem tools from source'
+        type: boolean
         required: false
-        default: 'release'
-        options:
-          - 'release'
-          - 'source'
+        default: false
       debugmode:
         description: 'Run tests in debug mode'
         type: boolean
@@ -35,45 +32,41 @@ jobs:
             /usr/local/bin/golem
           key: ${{ runner.os }}-golem-tools
       - name: Install Rust
-        if: steps.golem-tools-cache.outputs.cache-hit != 'true' && github.event.inputs.golemtools == 'source'
+        if: steps.golem-tools-cache.outputs.cache-hit != 'true' && github.event.inputs.buildtools == 'true'
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
       - name: Install protobuf
-        if: steps.golem-tools-cache.outputs.cache-hit != 'true' && github.event.inputs.golemtools == 'source'
+        if: steps.golem-tools-cache.outputs.cache-hit != 'true' && github.event.inputs.buildtools == 'true'
         uses: arduino/setup-protoc@v3
       - name: Install golem-cli
         if: steps.golem-tools-cache.outputs.cache-hit != 'true'
         run: |
-          if [[ "${{ github.event.inputs.golemtools }}" == "source" ]]
+          if [[ "${{ github.event.inputs.buildtools }}" == "true" ]]
           then
             cargo install --git https://github.com/golemcloud/golem golem-cli &&
             sudo mv ~/.cargo/bin/golem-cli /usr/local/bin &&
             echo "golem-cli built from source"
-          elif ! command -v golem-cli &> /dev/null || [[ "${{ github.event.inputs.golemtools }}" == "release" ]]
-          then
+          else
             curl -Ssf -L -o golem-cli https://github.com/golemcloud/golem/releases/latest/download/golem-cli-x86_64-unknown-linux-gnu &&
             chmod +x golem-cli &&
             sudo mv golem-cli /usr/local/bin/ &&
             echo "golem-cli installed from latest git release"
-          else echo "golem-cli is already installed"
           fi
           echo "Golem CLI version: $(golem-cli --version | cut -d ' ' -f 2)"
       - name: Install golem
         if: steps.golem-tools-cache.outputs.cache-hit != 'true'
         run: |
-          if [[ "${{ github.event.inputs.golemtools }}" == "source" ]]
+          if [[ "${{ github.event.inputs.buildtools }}" == "true" ]]
           then
             cargo install --git https://github.com/golemcloud/golem golem &&
             sudo mv ~/.cargo/bin/golem /usr/local/bin &&
             echo "golem built from source"
-          elif ! command -v golem &> /dev/null || [[ "${{ github.event.inputs.golemtools }}" == "release" ]]
-          then
+          else
             curl -Ssf -L -o golem https://github.com/golemcloud/golem/releases/latest/download/golem-x86_64-unknown-linux-gnu &&
             chmod +x golem &&
             sudo mv golem /usr/local/bin/ &&
             echo "golem installed from latest git release"
-          else echo "golem is already installed"
           fi
           echo "Golem version: $(golem --version | cut -d ' ' -f 2)"
 
