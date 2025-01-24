@@ -32,15 +32,15 @@ jobs:
             /usr/local/bin/golem
           key: ${{ runner.os }}-golem-tools
       - name: Install Rust
-        if: steps.golem-tools-cache.outputs.cache-hit != 'true' && github.event.inputs.buildtools == 'true'
+        if: github.event.inputs.buildtools == 'true'
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
       - name: Install protobuf
-        if: steps.golem-tools-cache.outputs.cache-hit != 'true' && github.event.inputs.buildtools == 'true'
+        if: github.event.inputs.buildtools == 'true'
         uses: arduino/setup-protoc@v3
       - name: Install golem-cli
-        if: steps.golem-tools-cache.outputs.cache-hit != 'true'
+        if: steps.golem-tools-cache.outputs.cache-hit != 'true' || github.event.inputs.buildtools == 'true'
         run: |
           if [[ "${{ github.event.inputs.buildtools }}" == "true" ]]
           then
@@ -58,7 +58,7 @@ jobs:
           else exit 1
           fi
       - name: Install golem
-        if: steps.golem-tools-cache.outputs.cache-hit != 'true'
+        if: steps.golem-tools-cache.outputs.cache-hit != 'true' || github.event.inputs.buildtools == 'true'
         run: |
           if [[ "${{ github.event.inputs.buildtools }}" == "true" ]]
           then
