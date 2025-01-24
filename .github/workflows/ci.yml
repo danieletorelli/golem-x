@@ -130,10 +130,6 @@ jobs:
           name: golem-tools
           path: /usr/local/bin
       - run: chmod u+x /usr/local/bin/golem*
-      - name: Print versions
-        run: |
-          echo "Golem CLI version: $(golem-cli --version | cut -d ' ' -f 2)"
-          echo "Golem version: $(golem --version | cut -d ' ' -f 2)"
       - name: Run golem
         run: golem start &
       - name: Create golem profile
