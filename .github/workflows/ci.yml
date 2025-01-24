@@ -24,13 +24,6 @@ jobs:
   setup-environment:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/cache@v4
-        id: golem-tools-cache
-        with:
-          path: |
-            /usr/local/bin/golem-cli
-            /usr/local/bin/golem
-          key: ${{ runner.os }}-golem-tools
       - name: Install Rust
         if: github.event.inputs.buildtools == 'true'
         uses: dtolnay/rust-toolchain@stable
@@ -40,7 +33,6 @@ jobs:
         if: github.event.inputs.buildtools == 'true'
         uses: arduino/setup-protoc@v3
       - name: Install golem-cli
-        if: steps.golem-tools-cache.outputs.cache-hit != 'true' || github.event.inputs.buildtools == 'true'
         run: |
           if [[ "${{ github.event.inputs.buildtools }}" == "true" ]]
           then
@@ -55,7 +47,6 @@ jobs:
           fi
           if ! command -v golem-cli &> /dev/null; then exit 1; fi
       - name: Install golem
-        if: steps.golem-tools-cache.outputs.cache-hit != 'true' || github.event.inputs.buildtools == 'true'
         run: |
           if [[ "${{ github.event.inputs.buildtools }}" == "true" ]]
           then
@@ -73,6 +64,10 @@ jobs:
         run: |
           echo "Golem CLI version: $(golem-cli --version | cut -d ' ' -f 2)"
           echo "Golem version: $(golem --version | cut -d ' ' -f 2)"
+      - uses: actions/upload-artifact@v4
+        with:
+          path: /usr/local/bin/golem*
+          name: golem-tools
 
   build:
     runs-on: ubuntu-latest
@@ -88,13 +83,11 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
-      - uses: actions/cache/restore@v4
+      - uses: actions/download-artifact@v4
         with:
-          path: |
-            /usr/local/bin/golem-cli
-            /usr/local/bin/golem
-          key: ${{ runner.os }}-golem-tools
-          fail-on-cache-miss: true
+          name: golem-tools
+          path: /usr/local/bin
+      - run: chmod u+x /usr/local/bin/golem*
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -125,13 +118,6 @@ jobs:
       - uses: actions/cache/restore@v4
         with:
           path: |
-            /usr/local/bin/golem-cli
-            /usr/local/bin/golem
-          key: ${{ runner.os }}-golem-tools
-          fail-on-cache-miss: true
-      - uses: actions/cache/restore@v4
-        with:
-          path: |
             ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
@@ -139,6 +125,15 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
           fail-on-cache-miss: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: golem-tools
+          path: /usr/local/bin
+      - run: chmod u+x /usr/local/bin/golem*
+      - name: Print versions
+        run: |
+          echo "Golem CLI version: $(golem-cli --version | cut -d ' ' -f 2)"
+          echo "Golem version: $(golem --version | cut -d ' ' -f 2)"
       - name: Run golem
         run: golem start &
       - name: Create golem profile
