@@ -4,6 +4,9 @@ on:
   push:
     tags: [ 'v*.*.*' ]
     branches: [ '**' ]
+  pull_request_review:
+    types:
+      - submitted
   workflow_dispatch:
     inputs:
       buildtools:
@@ -138,3 +141,19 @@ jobs:
         run: SKIP_BUILD=true ./update_components.sh
       - name: Functional tests
         run: DEBUG=${{ github.event.inputs.debugmode }} ./run_tests.sh
+
+  auto-merge:
+    needs: functional-tests
+    if: github.event.review.state == 'approved'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: TimonVS/pr-labeler-action@v5.0.0
+        with:
+          configuration-path: .github/auto_label.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: pascalgn/automerge-action@v0.16.4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MERGE_LABELS: "automerge,!WIP,!do-not-merge"
+          MERGE_METHOD: squash
