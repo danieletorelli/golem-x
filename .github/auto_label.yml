@@ -1,0 +1,8 @@
+automerge:
+  - chore/*
+  - update/*
+  - dependabot/*
+
+dependencies:
+  - update/*
+  - dependabot/*
