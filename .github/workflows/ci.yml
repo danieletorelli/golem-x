@@ -28,18 +28,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install Rust
-        if: github.event.inputs.buildtools == 'true'
+        # if: github.event.inputs.buildtools == 'true'   TODO: Re-enable when binary available
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
       - name: Install protobuf
-        if: github.event.inputs.buildtools == 'true'
+        # if: github.event.inputs.buildtools == 'true'   TODO: Re-enable when binary available
         uses: arduino/setup-protoc@v3
       - name: Install golem-cli
         run: |
-          if [[ "${{ github.event.inputs.buildtools }}" == "true" ]]
+          : # if [[ "${{ github.event.inputs.buildtools }}" == "true" ]]   TODO: Re-enable when binary available
+          if [[ "true" == "true" ]]
           then
-            cargo install --git https://github.com/golemcloud/golem golem-cli &&
+            cargo install --git https://github.com/golemcloud/golem-cli golem-cli &&
             sudo mv ~/.cargo/bin/golem-cli /usr/local/bin &&
             echo "golem-cli built from source"
           else
@@ -51,9 +52,10 @@ jobs:
           if ! command -v golem-cli &> /dev/null; then exit 1; fi
       - name: Install golem
         run: |
-          if [[ "${{ github.event.inputs.buildtools }}" == "true" ]]
+          : # if [[ "${{ github.event.inputs.buildtools }}" == "true" ]]   TODO: Re-enable when binary available
+          if [[ "true" == "true" ]]
           then
-            cargo install --git https://github.com/golemcloud/golem golem &&
+            cargo install --git https://github.com/golemcloud/golem-cli golem &&
             sudo mv ~/.cargo/bin/golem /usr/local/bin &&
             echo "golem built from source"
           else
