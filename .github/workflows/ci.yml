@@ -40,7 +40,7 @@ jobs:
           : # if [[ "${{ github.event.inputs.buildtools }}" == "true" ]]   TODO: Re-enable when binary available
           if [[ "true" == "true" ]]
           then
-            cargo install --git https://github.com/golemcloud/golem-cli golem-cli &&
+            cargo install --git https://github.com/golemcloud/golem-cli golem-cli --locked &&
             sudo mv ~/.cargo/bin/golem-cli /usr/local/bin &&
             echo "golem-cli built from source"
           else
@@ -55,7 +55,7 @@ jobs:
           : # if [[ "${{ github.event.inputs.buildtools }}" == "true" ]]   TODO: Re-enable when binary available
           if [[ "true" == "true" ]]
           then
-            cargo install --git https://github.com/golemcloud/golem-cli golem &&
+            cargo install --git https://github.com/golemcloud/golem-cli golem --locked &&
             sudo mv ~/.cargo/bin/golem /usr/local/bin &&
             echo "golem built from source"
           else
