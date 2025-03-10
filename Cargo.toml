@@ -8,7 +8,7 @@ path = "wit"
 
 [dependencies]
 chrono = "0.4.39"
-wit-bindgen-rt = { version = "0.39.0", features = ["bitflags"] }
+wit-bindgen-rt = { version = "0.40.0", features = ["bitflags"] }
 
 [lib]
 path = "src/lib.rs"
