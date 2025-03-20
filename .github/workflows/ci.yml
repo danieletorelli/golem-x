@@ -100,7 +100,7 @@ jobs:
       - name: Install cargo-component
         run: cargo binstall --no-confirm cargo-component || true
       - name: Create golem profile
-        run: golem-cli profile add -s golem --component-url=http://localhost:9881/
+        run: golem-cli profile new oss golem
       - name: Compile
         run: ./update_components.sh build
       - name: Test
@@ -136,7 +136,7 @@ jobs:
       - name: Run golem
         run: golem start &
       - name: Create golem profile
-        run: golem-cli profile add -s golem --component-url=http://localhost:9881/
+        run: golem-cli profile new oss golem
       - name: Load components
         run: SKIP_BUILD=true ./update_components.sh
       - name: Functional tests
