@@ -37,14 +37,13 @@ jobs:
         uses: arduino/setup-protoc@v3
       - name: Install golem-cli
         run: |
-          : # if [[ "${{ github.event.inputs.buildtools }}" == "true" ]]   TODO: Re-enable when binary available
-          if [[ "true" == "true" ]]
+          if [[ "${{ github.event.inputs.buildtools }}" == "true" ]]
           then
             cargo install --git https://github.com/golemcloud/golem-cli golem-cli --locked &&
             sudo mv ~/.cargo/bin/golem-cli /usr/local/bin &&
             echo "golem-cli built from source"
           else
-            curl -Ssf -L -o golem-cli https://github.com/golemcloud/golem/releases/latest/download/golem-cli-x86_64-unknown-linux-gnu &&
+            curl -Ssf -L -o golem-cli https://github.com/golemcloud/golem-cli/releases/latest/download/golem-cli-x86_64-unknown-linux-gnu &&
             chmod +x golem-cli &&
             sudo mv golem-cli /usr/local/bin/ &&
             echo "golem-cli installed from latest git release"
@@ -52,14 +51,13 @@ jobs:
           if ! command -v golem-cli &> /dev/null; then exit 1; fi
       - name: Install golem
         run: |
-          : # if [[ "${{ github.event.inputs.buildtools }}" == "true" ]]   TODO: Re-enable when binary available
-          if [[ "true" == "true" ]]
+          if [[ "${{ github.event.inputs.buildtools }}" == "true" ]]
           then
             cargo install --git https://github.com/golemcloud/golem-cli golem --locked &&
             sudo mv ~/.cargo/bin/golem /usr/local/bin &&
             echo "golem built from source"
           else
-            curl -Ssf -L -o golem https://github.com/golemcloud/golem/releases/latest/download/golem-x86_64-unknown-linux-gnu &&
+            curl -Ssf -L -o golem https://github.com/golemcloud/golem-cli/releases/latest/download/golem-x86_64-unknown-linux-gnu &&
             chmod +x golem &&
             sudo mv golem /usr/local/bin/ &&
             echo "golem installed from latest git release"
