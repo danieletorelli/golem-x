@@ -22,7 +22,7 @@ The project requires:
     - You can download the latest binary from the GitHub releases page
     - Or you can build it:
       ```bash
-      cargo install golem-cli
+      cargo install golem-cli --locked
       ```
       Note: Requires protobuf installed on your system
 
@@ -32,13 +32,13 @@ Run
 1. Spin up Golem OSS (optional, to run locally):
 
     ```bash
-    golem start
+    golem server run
     ```
 
 2. Building is as simple as:
 
     ```bash
-    golem-cli app -b release build
+    golem-cli app build -b release
     ```
 
    but you can use the provided script to simplify also the loading steps:
