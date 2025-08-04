@@ -39,7 +39,7 @@ impl user_api::Guest for Component {
             return false;
         }
 
-        println!("User '{}' is now following user '{}'", username, user);
+        println!("User '{username}' is now following user '{user}'");
         state::update(|s| {
             if s.followings.insert(user) {
                 timeline_cache::invalidate();
@@ -53,7 +53,7 @@ impl user_api::Guest for Component {
     fn followed_by(user: user_api::Username) -> bool {
         if check_target_username(&user) {
             let username = state::get_username();
-            println!("User '{}' is now followed by user '{}'", username, user);
+            println!("User '{username}' is now followed by user '{user}'");
             state::update(|s| s.followers.insert(user))
         } else {
             false
@@ -87,7 +87,7 @@ impl user_api::Guest for Component {
             return false;
         }
 
-        println!("User '{}' is no longer following user '{}'", username, user);
+        println!("User '{username}' is no longer following user '{user}'");
         state::update(|s| {
             if s.followings.remove(&user) {
                 timeline_cache::invalidate();
@@ -101,10 +101,7 @@ impl user_api::Guest for Component {
     fn unfollowed_by(user: user_api::Username) -> bool {
         if check_target_username(&user) {
             let username = state::get_username();
-            println!(
-                "User '{}' is no longer followed by user '{}'",
-                username, user
-            );
+            println!("User '{username}' is no longer followed by user '{user}'");
             state::update(|s| s.followers.remove(&user))
         } else {
             false
@@ -131,7 +128,7 @@ impl tweet_api::Guest for Component {
     fn post_tweet(content: String) -> tweet_api::PostedTweet {
         use bindings::component::golem_x_client::golem_x_client::TimelineApi;
 
-        println!("Posting tweet: {}", content);
+        println!("Posting tweet: {content}");
         let tweet = tweet_api::PostedTweet::from(content);
         state::update(|s| s.tweets.push(tweet.clone()));
         for follower in state::get(|s| s.followers.clone()) {
