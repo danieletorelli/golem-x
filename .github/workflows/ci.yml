@@ -113,7 +113,7 @@ jobs:
         with:
           toolchain: stable
       - name: Install cargo-binstall
-        uses: cargo-bins/cargo-binstall@v1.15.9
+        uses: cargo-bins/cargo-binstall@v1.15.10
       - name: Install cargo-component
         run: cargo binstall --no-confirm cargo-component || true
       - name: Create golem profile
