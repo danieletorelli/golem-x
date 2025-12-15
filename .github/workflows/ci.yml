@@ -103,7 +103,7 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: golem-tools
           path: /usr/local/bin
@@ -151,7 +151,7 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
           fail-on-cache-miss: true
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: golem-tools
           path: /usr/local/bin
