@@ -94,7 +94,7 @@ jobs:
     needs: setup-environment
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/bin/
@@ -141,7 +141,7 @@ jobs:
     needs: [ setup-environment, build ]
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/restore@v5
         with:
           path: |
             ~/.cargo/bin/
