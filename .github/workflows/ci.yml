@@ -84,7 +84,7 @@ jobs:
         run: |
           echo "Golem CLI version: $(golem-cli --version | cut -d ' ' -f 2)"
           echo "Golem version: $(golem --version | cut -d ' ' -f 2)"
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           path: /usr/local/bin/golem*
           name: golem-tools
@@ -131,7 +131,7 @@ jobs:
       - name: Clippy
         run: cargo clippy -- -Dwarnings
       - name: Save components
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           path: target/golem-components/release/*.wasm
           name: components
